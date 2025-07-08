@@ -1,59 +1,95 @@
-/* currently psuedocode
+#ifndef yHeader_COLCOLPAVINO.h
+#define yHeader_COLCOLPAVINO.h
 
-void interfaceDisplay(){
-    in-dungeon_hud_hp
-    in-dungeon_hud_gold
-    in-dungeon_hud_items
+#include <stdio.h>
 
-    // if game has been completed once or > once, separate function
+#define MAX_IDOLS 8
+#define SELECTED_IDOLS 3
 
-    post-dungeon-feedback_rescued_member
-    post-dungeon-feedback_dungeon_cleared
+typedef struct GameState{
+    int selectedIdols[SELECTED_IDOLS];
+    int DoneDungeons[SELECTED_IDOLS];
+    int gold;
+    int hp;
+    int inventory[3];
+} GameState;
 
-    // separate function
-    inventory_display
-    achivements_display
-}
+/**
+ * Displays the in-dungeon HUD with HP, Gold, and currently equipped item.
+ * Precondition: hp, maxHp >= 0; itemName can be NULL if itemQty is 0
+ * @param hp current HP
+ * @param maxHp maximum HP
+ * @param gold current gold
+ * @param itemName name of current item
+ * @param itemQty quantity of current item
+ * @return none
+ */
+void displayDungeonHUD(int hp, int maxHp, int gold, char* itemName, int itemQty);
 
-void hanamaruShop(){
+/**
+ * Displays post-dungeon rescue and clear feedback
+ * Precondition: idolID is within bounds of Idols array
+ * @param idolID index of rescued idol
+ * @param Idols array of idol names
+ * @return none
+ */
+void postDungeonFeedback(int idolID, const char *Idols[]);
 
-    item-availability_rescued_idol if (?)
+/**
+ * Displays the inventory screen
+ * Precondition: GameState must be initialized with inventory and gold
+ * @param state pointer to current GameState
+ * @return none
+ */
+void displayInventory(GameState *state);
 
-    purchase_logic
-    gold_deduction
+/**
+ * Displays achievement status
+ * Precondition: earned is an array of size totalAchievements; achievementNames is same length
+ * @param earned array of 0 or 1 values
+ * @param totalAchievements number of achievements
+ * @param achievementNames array of achievement strings
+ * @return none
+ */
+void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]);
 
-    item_unlock
-    usage_tracking
-}
+/**
+ * Hanamaru's shop logic including conditional availability and purchase validation
+ * Precondition: state and rescuedIdols must be valid arrays
+ * @param state pointer to current GameState
+ * @param rescuedIdols array indicating rescued idols
+ * @return none
+ */
+void hanamaruShop(GameState *state, int rescuedIdols[]);
 
-void finalDungeon(){
-    coordinated-movement-system_yohane
-    coordinated-movement-system_lailaps
+/**
+ * Saves game to file
+ * Precondition: state, rescuedIdols, achievements are valid pointers
+ * @param state pointer to current GameState
+ * @param rescuedIdols array of rescued idol flags
+ * @param achievements array of earned achievements
+ * @return none
+ */
+void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 
-    switch-activation-mechanic_trigger_condition
-    switch-activation-mechanic_layout_update
+/**
+ * Loads game from file
+ * Precondition: pointers are allocated
+ * @param state pointer to GameState
+ * @param rescuedIdols array of rescued idols
+ * @param achievements array of earned achievements
+ * @return 1 if successful, 0 if file not found
+ */
+int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 
-    siren_movement
-    siren-attack_rules
-    siren-defeat_logic
-    bat-spawn_boss_fight
-}
+/**
+ * Unlocks an achievement and prints message
+ * Precondition: earned must be a valid array of size >= index
+ * @param earned array of earned achievement flags
+ * @param index index of achievement to unlock
+ * @param message message to display when unlocked
+ * @return none
+ */
+void unlockAchievement(int earned[], int index, const char *message);
 
-void achievements(){
-
-    achievement_unlocked
-    achievement_tracking
-
-    save_game
-    save-game_gold
-    save-game_items
-    save-game_rescued_idols
-    load_game
-    load-game_gold
-    load-game_items
-    load-game_rescued_idols
-
-    new-game-plus_gold
-    new-game-plus_items
-    new-game-plsu_rescued_idols
-} */
+#endif
