@@ -33,7 +33,7 @@ typedef struct {
  * @param itemQty quantity of current item
  * @return none 
  */
- void displayDungeonHUD(int hp, int maxHp, int gold, char* itemName, int itemQty);
+ void displayDungeonHUD(int hp, int maxHp, int gold, const char* itemName, int itemQty);
 
  /**
  * Displays post-dungeon rescue and clear feedback
@@ -192,6 +192,41 @@ void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol);
  * @return none 
  */
 void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeonsCleared);
+
+/**
+ * Checks and unlocks final boss victory achievements
+ * Precondition: finalBossVictories must be >= 0, earned must be valid array
+ * @param finalBossVictories number of times final boss was defeated
+ * @param earned array of earned achievements
+ * @return none 
+ */
+void checkFinalBossAchievement(int finalBossVictories, int earned[]);
+
+/**
+ * Checks and unlocks damage-less dungeon clear achievement
+ * Precondition: dungeonDamage must be >= 0, earned must be valid array
+ * @param dungeonDamage damage taken in current dungeon
+ * @param earned array of earned achievements
+ * @return none 
+ */
+void checkDamageLessDungeonAchievement(int dungeonDamage, int earned[]);
+
+/**
+ * Checks and unlocks shop spending achievement
+ * Precondition: totalShopSpending must be >= 0, earned must be valid array
+ * @param totalShopSpending total gold spent across all playthroughs
+ * @param earned array of earned achievements
+ * @return none 
+ */
+void checkShopSpendingAchievement(int totalShopSpending, int earned[]);
+
+/**
+ * Checks and unlocks choco-mint ice cream save achievement
+ * Precondition: earned must be valid array
+ * @param earned array of earned achievements
+ * @return none 
+ */
+void checkChocoMintSaveAchievement(int earned[]);
 
 /**
  * Uses an item from inventory

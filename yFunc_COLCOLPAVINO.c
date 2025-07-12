@@ -11,6 +11,7 @@ const char *Idols[MAX_IDOLS] = {
 };
 
 char MainMenu(int saveGame){
+
 	char choice;
 	printf("\n****************************************\n");
 	printf("*         Yohane The Parhelion!        *\n");
@@ -32,6 +33,7 @@ char MainMenu(int saveGame){
 }
 
 void setNewGame(GameState *state, const char *idolNames[]){
+
     int i, count = 0;
     srand((unsigned)time(NULL));
 
@@ -57,6 +59,7 @@ void setNewGame(GameState *state, const char *idolNames[]){
 }
 
 void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]){
+
     FILE *fp = fopen("saveFile.dat", "wb");
 
     if (fp){
@@ -71,6 +74,7 @@ void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]){
 }
 
 int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]){
+
     FILE *fp = fopen("saveFile.dat", "rb");
 
     if (fp){
@@ -87,6 +91,7 @@ int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]){
 }
 
 int duplicateCheck(int selected[], int count, int val){
+
     int i, found = 0;
     for (i = 0; i < count; i++){
         if (selected[i] == val){
@@ -97,6 +102,7 @@ int duplicateCheck(int selected[], int count, int val){
 }
 
 void displayDungeonHUD(int hp, int maxHp, int gold, const char *itemName, int itemQty){
+
     printf("HP: %d/%d           Total Gold: %d GP", hp, maxHp, gold);
 
     if (itemQty > 0){
@@ -107,6 +113,7 @@ void displayDungeonHUD(int hp, int maxHp, int gold, const char *itemName, int it
 }
 
 void postDungeonFeedback(int idolID, const char *idolNames[]){
+
     printf("\n*******************************************************\n");
     printf("                 Dungeon Cleared!\n");
     printf("          %s rescued!\n", idolNames[idolID]);
@@ -114,6 +121,7 @@ void postDungeonFeedback(int idolID, const char *idolNames[]){
 }
 
 void displayInventory(GameState *state){
+
     printf("Lailaps: These are the items you have, Yohane!\n");
     printf("HP: %d/5\tGold: %d GP\n", state->hp, state->gold);
     printf("Items Available:\n");
@@ -124,6 +132,7 @@ void displayInventory(GameState *state){
 }
 
 void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]){
+
     int i, count = 0;
 
     for (i = 0; i < totalAchievements; i++){
@@ -146,6 +155,7 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
 }
 
 void unlockAchievement(int earned[], int index, const char *message){
+
     if (!earned[index]){
         earned[index] = 1;
         printf("Achievement Unlocked: %s\n", message);
@@ -153,6 +163,7 @@ void unlockAchievement(int earned[], int index, const char *message){
 }
 
 void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[]){
+
     int i;
     printf("\n=== Dungeon Selection ===\n");
     printf("Yohane's HP: %d/5\n", state->hp);
@@ -198,6 +209,7 @@ void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentId
 }
 
 int checkAllDungeonsCleared(GameState *state){
+
     int i;
     int allCleared = 1;
     for (i = 0; i < SELECTED_IDOLS; i++){
@@ -209,12 +221,14 @@ int checkAllDungeonsCleared(GameState *state){
 }
 
 void markDungeonClear(GameState *state, int dungeonIndex){
+
     if (dungeonIndex >= 0 && dungeonIndex < SELECTED_IDOLS){
         state->doneDungeons[dungeonIndex] = 1;
     }
 }
 
 void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[]){
+
     yohanePos[0] = 0;
     yohanePos[1] = 0;
     lailapsPos[0] = 0;
@@ -231,7 +245,8 @@ void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], i
     sirenPos[1] = 4;
 }
 
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches, int sirenPos[], int grid[][10]){
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[][10]){
+
     int i, j;
     
     printf("\n=== FINAL DUNGEON ===\n");
@@ -258,6 +273,7 @@ void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches, int si
 }
 
 int moveCharacter(int pos[], char direction, int grid[][10]){
+
     int newRow = pos[0];
     int newCol = pos[1];
     int moved = 0;
@@ -287,7 +303,8 @@ int moveCharacter(int pos[], char direction, int grid[][10]){
     return moved;
 }
 
-int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches, int grid[][10]){
+int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[][10]){
+
     int i, active = 0;
 
     for (i = 0; i < 6; i += 2){
@@ -314,6 +331,7 @@ int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches, int g
 }
 
 int checkSirenDefeat(int yohanePos[], int sirenPos[]){
+
     int rowDiff = abs(yohanePos[0] - sirenPos[0]);
     int colDiff = abs(yohanePos[1] - sirenPos[1]);
     int canDefeat = 0;
@@ -325,6 +343,7 @@ int checkSirenDefeat(int yohanePos[], int sirenPos[]){
 }
 
 void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
+
     int targetRow, targetCol;
 
     int yohaneDist = abs(sirenPos[0] - yohanePos[0]) + abs(sirenPos[1] - yohanePos[1]);
@@ -349,9 +368,9 @@ void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
 }
 
 void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
+
     if (!earned[currentIdol]){
         switch (currentIdol){
-            // no input case for yohane descends (yet)
             case 0:
                 unlockAchievement(earned, currentIdol, "Mikan Power!");
                 printf("\nRescued Chika for the first time!");
@@ -387,6 +406,31 @@ void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
         }
     }
 
+    if (rescuedIdols[0] >= 2 && !earned[13]){
+        unlockAchievement(earned, 13, "One more sunshine story!");
+    }
+    if (rescuedIdols[1] >= 2 && !earned[14]){
+        unlockAchievement(earned, 14, "Pianoforte Monologue!");
+    }
+    if (rescuedIdols[2] >= 2 && !earned[15]){
+        unlockAchievement(earned, 15, "Beginner's Sailing!");
+    }
+    if (rescuedIdols[3] >= 2 && !earned[16]){
+        unlockAchievement(earned, 16, "Oyasuminasan!");
+    }
+    if (rescuedIdols[4] >= 2 && !earned[17]){
+        unlockAchievement(earned, 17, "Red Gem Wink!");
+    }
+    if (rescuedIdols[5] >= 2 && !earned[18]){
+        unlockAchievement(earned, 18, "White First Love!");
+    }
+    if (rescuedIdols[6] >= 2 && !earned[19]){
+        unlockAchievement(earned, 19, "Sakana ka Nandaka!");
+    }
+    if (rescuedIdols[7] >= 2 && !earned[20]){
+        unlockAchievement(earned, 20, "New Winding Road!");
+    }
+
     if (rescuedIdols[3] && rescuedIdols[5] && rescuedIdols[6]){
         unlockAchievement(earned, 8, "AZALEA!");
     }
@@ -398,9 +442,16 @@ void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
     if (rescuedIdols[4] && rescuedIdols[5] && rescuedIdols[6]){
         unlockAchievement(earned, 10, "Guilty Kiss!");
     }
+
+    if (rescuedIdols[0] && rescuedIdols[1] && rescuedIdols[2] && 
+        rescuedIdols[3] && rescuedIdols[4] && rescuedIdols[5] && 
+        rescuedIdols[6] && rescuedIdols[7] && !earned[21]){
+        unlockAchievement(earned, 21, "Eikyuu Hours!");
+    }
 }
 
 void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeonsCleared){
+
     if (totalDungeonsCleared >= 10 && !earned[11]){
         unlockAchievement(earned, 11, "Dungeon Master");
     }
@@ -408,9 +459,133 @@ void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeon
     if (state->gold <= 0 && !earned[12]){
         unlockAchievement(earned, 12, "Big Spender");
     }
+
+    if (totalDungeonsCleared == 1 && !earned[22]){
+        unlockAchievement(earned, 22, "Yohane Descends!");
+    }
+
+    if (totalDungeonsCleared >= 10 && !earned[23]){
+        unlockAchievement(earned, 23, "No. 10!");
+    }
+
+    if (state->gold == 0 && !earned[25]){
+        unlockAchievement(earned, 25, "Step! ZERO to ONE!");
+    }
+}
+
+void checkDamageLessDungeonAchievement(int dungeonDamage, int earned[]){
+
+    if (dungeonDamage == 0 && !earned[26]){
+        unlockAchievement(earned, 26, "Aozora Jumping Heart!");
+    }
+}
+
+void checkShopSpendingAchievement(int totalShopSpending, int earned[]){
+
+    if (totalShopSpending >= 5000 && !earned[27]){
+        unlockAchievement(earned, 27, "Mitaiken Horizon!");
+    }
+}
+
+void checkChocoMintSaveAchievement(int earned[]){
+
+    if (!earned[28]){
+        unlockAchievement(earned, 28, "Ruby-chan! Hai? Nani ga suki?");
+    }
+}
+
+void checkFinalBossAchievement(int finalBossVictories, int earned[]){
+
+    if (finalBossVictories >= 2 && !earned[24]){
+        unlockAchievement(earned, 24, "Deep Resonance!");
+    }
+}
+
+void characterProfile(char Idols[], int choice){
+
+    int i;
+
+    printf("Character Profile:\n");
+    for (i = 0; i < MAX_IDOLS; i++){
+    printf("[%d] Name: %c", rescuedIdols[0]);
+    
+    switch (choice){
+        case 1:
+            printf("Yoshiko is a 1st year member of the idol group Aquors,
+                    who claims she's a fallen angel who was cast out of heaven.
+                    This persona enabled her alternate self in the mirror world
+                    to possess magical powers, capable of protecting Numazu from supernatural threats.\n");
+            printf("cv. Aika Kobayashi\n");
+            break;
+        case 2:
+            printf("Lailaps exists in the mirror world as Yohane's loyal wolf
+                    companion. She acts as the voice of reason and guides Yohane
+                    throughout her mission.\n");
+            printf("cv. Yoko Hikasa\n");
+            break;
+        case 3:
+            printf("Chika is a 2nd year and the founding member of Aquors.
+                    Her family runs a Ryokan inn, similarly to her mirror world self,
+                    where she specializes in her family's signature Mikan Mochi!\n");
+            printf("cv. Anju Inami\n");
+            break;
+        case 4:
+            printf("You is a 2nd year member of Aquors, who is Chika's
+                    childhood friend well-known for her athletic prowess.
+                    In the mirror world, she's a post-lady with equipment that
+                    allows her to travel far and wide through the land of Numazu.\n");
+            printf("cv. Saito Shuka\n");
+            break;
+        case 5:
+            printf("Riko is a 2nd year member of Aquors who transferred to Uchiura from Tokyo.
+                    As the pianist and main composer of the group, her diligence carries over
+                    to the mirror world where she acts as a zoologist capable of understanding
+                    and manipulating beast behavior.\n");
+            printf("cv. Rikako Aida\n");
+            break;
+        case 6:
+            printf("Hanamaru is a 1st year member of Aquors, well-known for her fondness for
+                    food, books, and her tendency to say "zura" at the end of every sentence.
+                    She's a travelling merchant in the mirror world who specializes in selling sweets
+                    and all sorts of goodies to help adventurers along their journey.\n");
+            printf("cv. Kanako Takatsuki\n");
+            break;
+        case 7:
+            printf("Ruby is a 1st year member of Aquors, who is Hanamaru's childhood friend.
+                    This carries over to the mirror world where Ruby, now a fairy, helps Hanamaru
+                    by supplying equipment to her shop. She also bestows magic in her sweet treats,
+                    some of which is rumored to be "life-savingly" delicious.\n");
+            printf("cv. Ai Furihata\n");
+            break;
+        case 8:
+            printf("Dia is a 3rd year member of Aquors and is Ruby's older sister. As she's the
+                    student council president of Uranohoshi high school, her mirro world self is the
+                    chief of staff of the Numazu Administrative Bureau. However, her mirror self is known
+                    to be highly fond of anything macha.\n");
+            printf("cv. Arisa Komiya\n");
+            break;
+        case 9:
+            printf("Kanan is a 3rd year member of Aquors, who runs a dive shop with her family. Her mirror
+                    world self is a mechanic who creates powerful and useful gadgets to make working and
+                    performing tasks in Numazu more convenient for citizens.\n");
+            printf("cv. Nanaka Suwa\n");
+            break;
+        case 10:
+            printf("Mari is a 3rd year member of Aquors, As part of an affluent and wealthy family,
+                    she has been designated as the school director of Uranohoshi high school. Her
+                    mirror self is no different, being a demon lord who commands a small horde
+                    of friendly creatures in the island of Awashima.\n");
+            printf("cv. Aina Suzuki\n");
+            break;
+        default:
+            printf("Please select a character to read their description.\n");
+            break;
+        }
+    }
 }
 
 void useItem(GameState *state, int itemIndex){
+
     if (state->inventory[itemIndex] > 0){
         state->inventory[itemIndex]--;
 
@@ -432,9 +607,11 @@ void useItem(GameState *state, int itemIndex){
 }
 
 void carryOverProgress(int rescuedIdols[], GameState *state){
+
     printf("Progress carried over to new playthrough!\n");
     printf("Gold: %d GP\n", state->gold);
     printf("Items carried over:\n");
+
     if (state->inventory[0] > 0)
         printf("- Tears of a Fallen Angel: %d\n", state->inventory[0]);
     if (state->inventory[1] > 0)
@@ -466,22 +643,26 @@ void resetIdolSelection(int rescuedIdols[]){
 }
 
 void traverseDungeon(GameState *state, int dungeonIndex, const char *idolNames[]){
+    (void)state; /* Suppress unused parameter warning */
+    (void)dungeonIndex; /* Suppress unused parameter warning */
+    (void)idolNames; /* Suppress unused parameter warning */
     /* to be implemented */
     postDungeonFeedback(dungeonIndex, idolNames);
 }
 
 void hanamaruShop(GameState *state, int rescuedIdols[]){
     ShopItem shopItems[] = {
-        {"Tears of a Fallen Angel", 30, -1, 0, "Restores 1 HP"},
-        {"Noppo Bread", 100, -1, 1, "Restores 1 HP"},
-        {"Shovel Upgrade", 300, 6, -1, "Upgrades your shovel"},
-        {"Bat Tamer", 400, 1, -1, "Tames bats"},
-        {"Air Shoes", 500, 2, -1, "Allows air movement"},
-        {"Stewshine", 1000, 7, -1, "Special stew"},
-        {"Mikan Mochi", 1000, 0, -1, "Mikan-flavored mochi"},
-        {"Kurosawa Macha", 1000, 5, -1, "Premium matcha"},
-        {"Choco-Mint Ice Cream", 2000, 4, 2, "Restores full HP"}
+        {"Tears of a Fallen Angel", 30, -1, 0, "Heals Yohane .5 HP"},
+        {"Noppo Bread", 100, -1, 1, "Heals Yohane .5 HP"},
+        {"Shovel Upgrade", 300, 6, -1, "Allows Yohane to dig spike walls without damage"},
+        {"Bat Tamer", 400, 1, -1, "Turns damage from all bats to a constant .5 HP damage"},
+        {"Air Shoes", 500, 2, -1, "Allows Yohane to walk over water tiles. Prevents damage from standing on heat tiles."},
+        {"Stewshine", 1000, 7, -1, "Increases Yohane’s HP by 1 permanently"},
+        {"Mikan Mochi", 1000, 0, -1, "Increases Yohane’s HP by 1 permanently"},
+        {"Kurosawa Macha", 1000, 5, -1, "Increases Yohane’s HP by 1 permanently"},
+        {"Choco-Mint Ice Cream", 2000, 4, 2, "Saves Yohane from a fatal hit when on hand. Heals Yohane to full health afterwards"}
     };
+    
     int numItems = 9;
     int choice;
     char input[10];
