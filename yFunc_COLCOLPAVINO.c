@@ -317,7 +317,7 @@ int checkSirenDefeat(int yohanePos[], int sirenPos[]){
     int rowDiff = abs(yohanePos[0] - sirenPos[0]);
     int colDiff = abs(yohanePos[1] - sirenPos[1]);
 
-    if ((rowDiff == 1 && colDiff = 0) || (rowDiff == 0 && colDiff = 1)){
+    if ((rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)){
         return 1; // refactor if-return
     }
     return 0;
@@ -400,7 +400,7 @@ void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
 }
 
 void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeonsCleared){
-    if (totalDungeonsCleared >= 10 && learned[11]){
+    if (totalDungeonsCleared >= 10 && earned[11]){
         unlockAchievement(earned, 11, "Dungeon Master");
     }
 
