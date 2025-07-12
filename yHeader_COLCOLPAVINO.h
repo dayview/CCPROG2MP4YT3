@@ -15,6 +15,14 @@ typedef struct GameState{
     int inventory[INVENTORY_SLOTS];
 } GameState;
 
+typedef struct {
+    char name[50];
+    int cost;
+    int unlockIdol;
+    int inventoryIndex;
+    char description[100];
+} ShopItem;
+
 /**
  * Displays the in-dungeon HUD with HP, Gold, and currently equipped item.
  * Precondition: hp, maxHp >= 0; itemName can be NULL if itemQty is 0
@@ -217,7 +225,7 @@ int allIdolsRescued(int rescuedIdols[]);
  * @param rescuedIdols array of rescued idols
  * @return none 
  */
-void resetIdolSelectrion(int rescuedIdols[]);
+void resetIdolSelection(int rescuedIdols[]);
 
 /**
  * Main menu

@@ -26,6 +26,8 @@ char MainMenu(int saveGame){
 	printf("[Q]uit\n\n");
 	printf("Choice: ");
 	scanf(" %c", &choice);
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF) {}
 	return choice;	
 }
 
@@ -86,10 +88,10 @@ int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]){
 
 int duplicateCheck(int selected[], int count, int val){
     int i, found = 0;
-
     for (i = 0; i < count; i++){
-        if (selected[i] == val)
+        if (selected[i] == val){
             found = 1;
+        }
     }
     return found;
 }
@@ -152,35 +154,34 @@ void unlockAchievement(int earned[], int index, const char *message){
 
 void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[]){
     int i;
-    
     printf("\n=== Dungeon Selection ===\n");
     printf("Yohane's HP: %d/5\n", state->hp);
     printf("Total Gold: %d GP\n", state->gold);
     printf("Item on hand: ");
-
     int hasItem = 0;
+    int foundItemIndex = -1;
     for (i = 0; i < INVENTORY_SLOTS; i++){
-        if (state->inventory[i] > 0){
-            switch(i){
-                case 0:
-                    printf("Tears of a Fallen Angel (%d)", state->inventory[i]);
-                    break;
-                case 1:
-                    printf("Noppo Bread (%d)", state->inventory[i]);
-                    break;
-                case 2:
-                    printf("Choco-Mint Ice Cream (%d)", state->inventory[i]);
-                    break;
-            }
+        if (state->inventory[i] > 0 && hasItem == 0){
+            foundItemIndex = i;
             hasItem = 1;
-            break; // refactor since if-break
         }
     }
-
-    if (!hasItem)
+    if (hasItem){
+        switch(foundItemIndex){
+            case 0:
+                printf("Tears of a Fallen Angel (%d)", state->inventory[0]);
+                break;
+            case 1:
+                printf("Noppo Bread (%d)", state->inventory[1]);
+                break;
+            case 2:
+                printf("Choco-Mint Ice Cream (%d)", state->inventory[2]);
+                break;
+        }
+    } else {
         printf("N/A");
+    }
     printf("\n\n");
-
     printf("Available Dungeons:\n");
     for (i = 0; i < SELECTED_IDOLS; i++){
         if (state->doneDungeons[i] == 0){
@@ -189,22 +190,22 @@ void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentId
             printf("[X] %s's Dungeon (Cleared)\n", Idols[currentIdols[i]]);
         }
     }
-
     printf("\n[I]nventory [S]ave and Quit");
-    
-    if (rescuedIdols[3])
+    if (rescuedIdols[3]){
         printf("[H]anamaru Shop");
-        printf("\nChoice: ");
+    }
+    printf("\nChoice: ");
 }
 
 int checkAllDungeonsCleared(GameState *state){
     int i;
-
+    int allCleared = 1;
     for (i = 0; i < SELECTED_IDOLS; i++){
-        if (state->doneDungeons[i] == 0)
-            return 0;
+        if (state->doneDungeons[i] == 0){
+            allCleared = 0;
+        }
     }
-    return 1;
+    return allCleared;
 }
 
 void markDungeonClear(GameState *state, int dungeonIndex){
@@ -259,7 +260,7 @@ void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches, int si
 int moveCharacter(int pos[], char direction, int grid[][10]){
     int newRow = pos[0];
     int newCol = pos[1];
-
+    int moved = 0;
     switch (direction){
         case 'W':
         case 'w':
@@ -278,13 +279,12 @@ int moveCharacter(int pos[], char direction, int grid[][10]){
             newCol++;
             break;
     }
-
     if (newRow >= 0 && newRow < 10 && newCol >= 0 && newCol < 10 && grid[newRow][newCol] != 2){
         pos[0] = newRow;
         pos[1] = newCol;
-        return 1; // refactor if-return
+        moved = 1;
     }
-    return 0;
+    return moved;
 }
 
 int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches, int grid[][10]){
@@ -316,11 +316,12 @@ int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches, int g
 int checkSirenDefeat(int yohanePos[], int sirenPos[]){
     int rowDiff = abs(yohanePos[0] - sirenPos[0]);
     int colDiff = abs(yohanePos[1] - sirenPos[1]);
+    int canDefeat = 0;
 
     if ((rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)){
-        return 1; // refactor if-return
+        canDefeat = 1;
     }
-    return 0;
+    return canDefeat;
 }
 
 void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
@@ -400,7 +401,7 @@ void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
 }
 
 void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeonsCleared){
-    if (totalDungeonsCleared >= 10 && earned[11]){
+    if (totalDungeonsCleared >= 10 && !earned[11]){
         unlockAchievement(earned, 11, "Dungeon Master");
     }
 
@@ -444,13 +445,13 @@ void carryOverProgress(int rescuedIdols[], GameState *state){
 
 int allIdolsRescued(int rescuedIdols[]){
     int i;
-
+    int allRescued = 1;
     for (i = 0; i < MAX_IDOLS; i++){
-        if (rescuedIdols[i] == 0)
-            return 0; // refactor if-return
-    }    
-
-    return 1;
+        if (rescuedIdols[i] == 0){
+            allRescued = 0;
+        }
+    }
+    return allRescued;
 }
 
 void resetIdolSelection(int rescuedIdols[]){
@@ -470,62 +471,98 @@ void traverseDungeon(GameState *state, int dungeonIndex, const char *idolNames[]
 }
 
 void hanamaruShop(GameState *state, int rescuedIdols[]){
+    ShopItem shopItems[] = {
+        {"Tears of a Fallen Angel", 30, -1, 0, "Restores 1 HP"},
+        {"Noppo Bread", 100, -1, 1, "Restores 1 HP"},
+        {"Shovel Upgrade", 300, 6, -1, "Upgrades your shovel"},
+        {"Bat Tamer", 400, 1, -1, "Tames bats"},
+        {"Air Shoes", 500, 2, -1, "Allows air movement"},
+        {"Stewshine", 1000, 7, -1, "Special stew"},
+        {"Mikan Mochi", 1000, 0, -1, "Mikan-flavored mochi"},
+        {"Kurosawa Macha", 1000, 5, -1, "Premium matcha"},
+        {"Choco-Mint Ice Cream", 2000, 4, 2, "Restores full HP"}
+    };
+    int numItems = 9;
     int choice;
-
-    printf("\nHanamaru's Shop - Gold: %d GP\n", state->gold);
-    printf("1) Tears of a Fallen Angel - 30 GP\n");
-    printf("2) Noppo Bread             - 100 GP\n");
-
-    if (rescuedIdols[6])
-    printf("[3] Shovel Upgrade         - 300 GP\n");
-
-    if (rescuedIdols[1])
-    printf("[4] Bat Tamer              - 400 GP\n");
-
-    if (rescuedIdols[2])
-    printf("[5] Air Shoes              - 500 GP\n");
-
-    if (rescuedIdols[7])
-    printf("[6] Stewshine              - 1000 GP\n");
-
-    if (rescuedIdols[0])
-    printf("[7] Mikan Mochi            - 1000 GP\n");
-
-    if (rescuedIdols[5])
-    printf("[8] Kurosawa Macha         - 1000 GP\n");
-
-    if (rescuedIdols[4])
-    printf("[9] Choco-Mint Ice Cream   - 2000 GP\n");
-
+    char input[10];
+    int i;
+    int itemNum;
+    int selectedItem;
+    ShopItem *item;
+    char confirm[10];
+    int c;
+    
+    printf("\n========================================\n");
+    printf("         HANAMARU'S SHOP\n");
+    printf("========================================\n");
+    printf("Gold: %d GP\n", state->gold);
+    printf("Current Inventory:\n");
+    printf("  Tears of a Fallen Angel: %d\n", state->inventory[0]);
+    printf("  Noppo Bread: %d\n", state->inventory[1]);
+    printf("  Choco-Mint Ice Cream: %d\n", state->inventory[2]);
+    printf("========================================\n");
+    printf("Available Items:\n");
+    printf("1) %-20s - %4d GP\n", shopItems[0].name, shopItems[0].cost);
+    printf("2) %-20s - %4d GP\n", shopItems[1].name, shopItems[1].cost);
+    
+    itemNum = 3;
+    for (i = 2; i < numItems; i++) {
+        if (shopItems[i].unlockIdol == -1 || rescuedIdols[shopItems[i].unlockIdol]) {
+            printf("%d) %-20s - %4d GP\n", itemNum, shopItems[i].name, shopItems[i].cost);
+        }
+        itemNum++;
+    }
     printf("[R]eturn\n");
     printf("Choice: ");
-    scanf("%d", &choice);
-
-    int cost = 0, itemIndex = -1;
-    switch (choice){
-        case 1:
-            cost = 30;
-            itemIndex = 0;
-            break;
-        case 2:
-            cost = 100;
-            itemIndex = 1;
-            break;
-        case 9:
-            if (rescuedIdols[4]){
-                cost = 2000;
-                itemIndex = 2;
-            }
-            break;
-        default:
-            break;
+    scanf("%s", input);
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    if (strcmp(input, "R") == 0 || strcmp(input, "r") == 0) {
+        printf("Returning to main menu...\n");
+        return;
     }
-
-    if (itemIndex >= 0 && state->gold >= cost){
-        state->inventory[itemIndex]++;
-        state->gold -= cost;
-        printf("Purchase successful! Remaining Gold: %d GP\n", state->gold);
+    choice = atoi(input);
+    if (choice < 1 || choice > numItems) {
+        printf("Invalid choice!\n");
+        return;
+    }
+    selectedItem = choice - 1;
+    if (selectedItem >= 2) {
+        selectedItem = selectedItem + 1;
+    }
+    if (selectedItem >= numItems) {
+        printf("Invalid choice!\n");
+        return;
+    }
+    item = &shopItems[selectedItem];
+    if (item->unlockIdol != -1 && !rescuedIdols[item->unlockIdol]) {
+        printf("Item locked! Rescue the required idol first.\n");
+        return;
+    }
+    printf("\n%s\n", item->description);
+    printf("Cost: %d GP\n", item->cost);
+    printf("Purchase? (Y/N): ");
+    scanf("%s", confirm);
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    if (strcmp(confirm, "Y") == 0 || strcmp(confirm, "y") == 0) {
+        if (state->gold >= item->cost) {
+            if (item->inventoryIndex >= 0) {
+                if (state->inventory[item->inventoryIndex] < 99) {
+                    state->inventory[item->inventoryIndex]++;
+                    state->gold -= item->cost;
+                    printf("Purchase successful! %s added to inventory.\n", item->name);
+                    printf("Remaining Gold: %d GP\n", state->gold);
+                } else {
+                    printf("Inventory full for this item!\n");
+                }
+            } else {
+                state->gold -= item->cost;
+                printf("Purchase successful! %s acquired.\n", item->name);
+                printf("Remaining Gold: %d GP\n", state->gold);
+            }
+        } else {
+            printf("Not enough gold! You need %d GP more.\n", item->cost - state->gold);
+        }
     } else {
-        printf("Not enough gold or item locked!\n");
+        printf("Purchase cancelled.\n");
     }
 }
