@@ -24,6 +24,15 @@ typedef struct {
 } ShopItem;
 
 /**
+ * Displays the main menu and stores the user's choice as an integer code.
+ * Precondition: saveGame is 0 or 1
+ * @param saveGame 1 if saved game exists, else 0
+ * @param userChoice pointer to store menu selection
+ * @return none 
+ */
+void mainMenu(int saveGame, int *userChoice);
+
+/**
  * Displays the in-dungeon HUD with HP, Gold, and currently equipped item.
  * Precondition: hp, maxHp >= 0; itemName can be NULL if itemQty is 0
  * @param hp current HP
@@ -261,11 +270,6 @@ int allIdolsRescued(int rescuedIdols[]);
  * @return none 
  */
 void resetIdolSelection(int rescuedIdols[]);
-
-/**
- * Main menu
- */
-char MainMenu(int saveGame);
 
 /**
  * New Game / Continue

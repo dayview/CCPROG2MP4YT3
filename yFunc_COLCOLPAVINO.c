@@ -5,33 +5,6 @@
 #include <math.h>
 #include "yHeader_COLCOLPAVINO.h"
 
-const char *Idols[MAX_IDOLS] = {
-    "Chika", "Riko", "You", "Hanamaru", 
-    "Ruby", "Dia", "Kanan", "Mari"
-};
-
-char MainMenu(int saveGame){
-
-	char choice;
-	printf("\n****************************************\n");
-	printf("*         Yohane The Parhelion!        *\n");
-	printf("*      The Siren in the Mirror World!  *\n");
-	printf("\n****************************************\n");
-	
-	if(saveGame)
-		printf("[C]ontinue\n");
-	else 
-		printf("[N]ew Game\n");
-	
-	printf("[V]iew Achievements\n");
-	printf("[Q]uit\n\n");
-	printf("Choice: ");
-	scanf(" %c", &choice);
-	int c;
-	while ((c = getchar()) != '\n' && c != EOF) {}
-	return choice;	
-}
-
 void setNewGame(GameState *state, const char *idolNames[]){
 
     int i, count = 0;
@@ -699,12 +672,12 @@ void hanamaruShop(GameState *state, int rescuedIdols[]){
     while ((c = getchar()) != '\n' && c != EOF) {}
     if (strcmp(input, "R") == 0 || strcmp(input, "r") == 0) {
         printf("Returning to main menu...\n");
-        return;
+        return; // refactor
     }
     choice = atoi(input);
     if (choice < 1 || choice > numItems) {
         printf("Invalid choice!\n");
-        return;
+        return; // refactor
     }
     selectedItem = choice - 1;
     if (selectedItem >= 2) {
@@ -712,12 +685,12 @@ void hanamaruShop(GameState *state, int rescuedIdols[]){
     }
     if (selectedItem >= numItems) {
         printf("Invalid choice!\n");
-        return;
+        return; // refactor
     }
     item = &shopItems[selectedItem];
     if (item->unlockIdol != -1 && !rescuedIdols[item->unlockIdol]) {
         printf("Item locked! Rescue the required idol first.\n");
-        return;
+        return; // refactor
     }
     printf("\n%s\n", item->description);
     printf("Cost: %d GP\n", item->cost);
