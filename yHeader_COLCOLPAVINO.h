@@ -2,18 +2,67 @@
 #define yHeader_COLCOLPAVINO_h
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 #define MAX_IDOLS 8
 #define SELECTED_IDOLS 3
 #define INVENTORY_SLOTS 3
 
-typedef struct GameState{
+#define MAX_BATS 15
+#define ROWS 10
+#define COLS 55
+#define TILE_BORDER '*'
+#define TILE_PASSABLE '.'
+#define TILE_SPIKE 'x'
+#define TILE_WATER 'w'
+#define TILE_HEAT 'h'
+#define TILE_EXIT 'E'
+#define TILE_BAT 'b'
+#define TILE_YOHANE 'Y'
+#define TILE_TREASURE 'T'
+#define MAX_ITEMS 10
+#define TILE_WALL 'v'
+
+#define ITEM_TEARS 1
+#define ITEM_NOPPO 2
+#define ITEM_SHOVEL 3
+#define ITEM_BAT 4
+#define ITEM_AIR 5
+#define ITEM_STEWSHINE 6
+#define ITEM_MIKAN 7
+#define ITEM_KUROSAWA 8
+#define ITEM_CHOCO 9
+
+typedef struct {
     int selectedIdols[SELECTED_IDOLS];
     int doneDungeons[SELECTED_IDOLS];
     int gold;
-    int hp;
-    int inventory[INVENTORY_SLOTS];
+    float hp;
+    int maxHP;
+    int inventory[MAX_ITEMS];
+    int currentItem;
+    int usedChoco;
+    int isGameOver;
 } GameState;
+
+typedef struct {
+    int x;
+    int y;
+    int alive;
+    int attack;
+} bat;
+
+typedef struct {
+    char map[ROWS][COLS];
+    int floor;
+    int maxFllor;
+    int yohaneX;
+    int yohaneY;
+    bat bats[MAX_BATS];
+} Dungeon;
 
 typedef struct {
     char name[50];
@@ -22,6 +71,16 @@ typedef struct {
     int inventoryIndex;
     char description[100];
 } ShopItem;
+
+const char *Idols[MAX_IDOLS] = {
+    "Chika", "Riko", "You", "Hanamaru", 
+    "Ruby", "Dia", "Kanan", "Mari"
+    };
+
+const char *dungeonNames[MAX_IDOLS] = {
+    "Yasudaya Ryokan", "Numazu Deep Sea Aquarium", "Izu-Mito Sea Paradise", "Shougetsu Confectionary", 
+    "Nagahama Castle Ruins", "Numazugoyotei", "Uchiura Bay Pier", "Awashima Marine Park"
+    };
 
 /**
  * Displays the main menu and stores the user's choice as an integer code.

@@ -7,10 +7,6 @@ int main(){
     GameState game;
     int rescuedIdols[MAX_IDOLS] = {0};
     int achievements[30] = {0};
-    const char *Idols[MAX_IDOLS] = {
-    "Chika", "Riko", "You", "Hanamaru", 
-    "Ruby", "Dia", "Kanan", "Mari"
-    };
 
     int saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
 
@@ -43,4 +39,5 @@ int main(){
                 break;
         }
         return 0;
+    }
 }
