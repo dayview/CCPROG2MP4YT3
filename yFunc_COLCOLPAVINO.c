@@ -135,12 +135,11 @@ void checkChocoRevive(GameState *state)
 			}
 		}
 	}
-	if (state->hp <= 0)
-		triggerDeath(state, "Killed by: Siren");
+    if(state->hp <= 0)
+         state->isGameOver = 1;
 } // M
 
 void triggerDeath(GameState *state, const char *cause){
-    state->isGameOver = 1;
     strcpy(state->deathReason, cause);
 
     printf("\n****************************************\n");
@@ -268,7 +267,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 					if (state->hp <= 0)
                         triggerDeath(state, "Spike Trap");
 
-                    checkChocoRevive(state);
+                    
 				}
 				dungeon->map[x][y] = '.';			
 				move = 0;
@@ -276,11 +275,21 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 			case 'T':
 				printf("You found a treasure chest!\n");
 				reward = rand()%2; //0 - gold 1 - item
-				if (reward == 0){
+				if (reward == 0)
+				{
 					gold = (rand() % 91) + 10;
 					printf("You gained %d gold\n",gold);
 					state->gold += gold;
-				} else {
+					
+					if(state->povertyMode == 1)
+					{
+						state->isGameOver = 1;
+						if(state->hp <= 0)
+                			triggerDeath(state, "Getting Gold");
+					}
+				} 
+				else 
+				{
                     printf("You found Noppo Bread!\n");
 
                     for (inv = 0; inv < MAX_ITEMS; inv++){
@@ -294,6 +303,8 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
                         printf("Inventory full! Couldn't pick up the item.\n");
 					
 				}
+				
+				
 				dungeon->map[x][y] = '.';
 				break;
 			case 'E':
@@ -342,8 +353,18 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
                 }
 
                 state->gold += pickupGold;
-				printf("You picked up %d gold! Total gold: %d\n", pickupGold, state->gold);
-			    dungeon->map[x][y] = '.'; // Remove gold icon after pickup
+                
+                if(state->povertyMode == 0)
+                {
+					printf("You picked up %d gold! Total gold: %d\n", pickupGold, state->gold);
+			    	dungeon->map[x][y] = '.'; // Remove gold icon after pickup
+				}
+				else 
+				{
+					state->isGameOver = 1;
+					if(state->hp <= 0)
+                		triggerDeath(state, "Getting Gold");
+				}
 			    break;	
 		}
 	}
@@ -365,7 +386,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 			
 			if(state->hp <= 0)
                 triggerDeath(state, "Heat Tile");
-            checkChocoRevive(state);
+            
 			
 		}
 		else

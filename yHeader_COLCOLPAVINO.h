@@ -54,6 +54,7 @@ typedef struct {
     int batMoveCounter;
     char deathReason[30];
     int totalShopSpent;
+    int povertyMode;
 } GameState; // M & L
 
 typedef struct {

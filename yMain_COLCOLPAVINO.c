@@ -1,3 +1,13 @@
+/*
+Description:  A rogue-lite dungeon crawler game in C
+Programmed by: Massi Colcol - S15 
+               Leon Pavino - S14
+Last modified: 07-30-2025
+Version: 2.4.8
+Acknowledgements: <stdio.h>, <string.h>, <stdlib.h>, <time.h>, <math.h>
+                  and online references (Stack Overflow, GeeksforGeeks, cplusplus.com) 
+                  for examples on random dungeon generation, file I/O and other functions.
+ */
 #include "yHeader_COLCOLPAVINO.h"
 
 int main(){
@@ -50,6 +60,7 @@ int main(){
 
         printf("    [V]iew Achievements\n");
         printf("    [P]rofile Viewer\n");
+        printf("    [B]onus Mode (Vow of Poverty)\n");
         printf("    [Q]uit\n");
         printf("Your choice: ");
         scanf(" %c", &input);
@@ -139,6 +150,15 @@ int main(){
                 } while (profileChoice != '0');
                 break;
             }
+            
+            case 'B': 
+            case 'b':
+                game.povertyMode = 1;
+                printf("Starting new game for bonus mode...\n");
+                setNewGame(&game, Idols);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories, Idols);
+                saveExists = 1;
+                break;
 
             case 'Q':
             case 'q':
