@@ -871,13 +871,14 @@ void postDungeonFeedback(int idolID, const char *idolNames[]){
     printf("\n*******************************************************\n");
 } // L
 
-void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]){
+void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]) {
     int i;
     int currentPage = 0;
     int achievementsPerPage = 8;
-    int totalPages = (totalAchievements + achievementsPerPage-1) / achievementsPerPage;
+    int totalPages = (totalAchievements + achievementsPerPage - 1) / achievementsPerPage;
     int done = 0;
     char choice[10];
+
     const char *descriptions[28] = {
         "Cleared first dungeon",                   // 1
         "Rescued Chika for the first time",        // 2
@@ -909,10 +910,10 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
         "Complete a run with 0G remaining"         // 28
     };
 
-    while (done == 0){
+    while (done == 0) {
         int earnedCount = 0;
-        for (i = 0; i < totalAchievements; i++){
-            if (earned[i]){
+        for (i = 0; i < totalAchievements; i++) {
+            if (earned[i]) {
                 earnedCount++;
             }
         }
@@ -924,46 +925,45 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
 
         int startIndex = currentPage * achievementsPerPage;
         int endIndex = startIndex + achievementsPerPage;
-        if (endIndex > totalAchievements){
+        if (endIndex > totalAchievements) {
             endIndex = totalAchievements;
         }
 
-        for (i = startIndex; i < endIndex; i++){
-            if (earned[i]){
-                printf("[%2d] %-35s %s\n", i-startIndex+1, achievementNames[i], "EARNED!");
+        for (i = startIndex; i < endIndex; i++) {
+            if (earned[i]) {
+                printf("[%2d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "EARNED!");
             } else {
-                printf("[%2d] %-35s %s\n", i-startIndex+1, achievementNames[i], "NOT EARNED!");
+                printf("[%2d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "NOT EARNED!");
             }
         }
 
-        printf("\nPage %d of %d\n", currentPage+1, totalPages);
+        printf("\nPage %d of %d\n", currentPage + 1, totalPages);
         printf("[N]ext Page\t[P]revious Page\t[R]eturn to Main Menu\n");
         printf("Choice: ");
         scanf("%s", choice);
 
-        if (strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0){
-            if (currentPage < totalPages-1){
+        if (strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0) {
+            if (currentPage < totalPages - 1) {
                 currentPage++;
             } else {
                 printf("Already on last page.\n");
             }
-        } else if (strcmp(choice, "P") == 0 || strcmp(choice, "p") == 0){
-            if (currentPage > 0){
+        } else if (strcmp(choice, "P") == 0 || strcmp(choice, "p") == 0) {
+            if (currentPage > 0) {
                 currentPage--;
             } else {
                 printf("Already on first page.\n");
             }
-        } else if (strcmp(choice, "R") == 0 || strcmp(choice, "r") == 0){
+        } else if (strcmp(choice, "R") == 0 || strcmp(choice, "r") == 0) {
             done = 1;
         } else {
             int num = atoi(choice);
-            if (num >= 1 && num <= achievementsPerPage && startIndex+num-1 < totalAchievements){
-                int actualIndex = startIndex+num-1;
+            if (num >= 1 && num <= achievementsPerPage && startIndex + num - 1 < totalAchievements) {
+                int actualIndex = startIndex + num - 1;
                 printf("\n************************************************************\n");
                 printf("Achievement Name: %s\n", achievementNames[actualIndex]);
-                if (earned[actualIndex]){
+                if (earned[actualIndex]) {
                     printf("STATUS: EARNED!\n");
-                    printf("Date Earned: test\n"); // to implement
                 } else {
                     printf("STATUS: NOT EARNED!\n");
                 }
@@ -976,7 +976,7 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
             }
         }
     }
-} // L
+} // L 
 
 void unlockAchievement(int earned[], int index, const char *message){
 
@@ -1710,4 +1710,116 @@ void placeRandomTile(Dungeon *dungeon, char tile, int count)
 		
 		dungeon->map[x][y] = tile;
 	}
+}
+
+void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int switchesActivated, int sirenPos[], int yohanePos[], int lailapsPos[]){
+    int i, x, y;
+    int placed = 0;
+
+    for (i = 0; i < MAX_BATS && placed == 0; i++){
+        if (bats[i].alive == 0){
+            int attempts = 0;
+            do {
+                x = rand() % ROWS;
+                y = rand() % COLS;
+                attempts++;
+
+                if (grid[x][y] == 0 &&
+                    !(x == sirenPos[0] && y == sirenPos[1]) &&
+                    !(x == yohanePos[0] && y == yohanePos[1]) &&
+                    !(x == lailapsPos[0] && y == lailapsPos[1])){
+                        
+                    bats[i].x = x;
+                    bats[i].y = y;
+                    bats[i].alive = 1;
+                    bats[i].attack = 0;
+
+                    grid[x][y] = 3;
+                    printf("A bat has spawned in the mirror world...\n");
+
+                    placed = 1;
+                }
+            } while (!placed && attempts < 100);
+        }
+    }
+}
+
+void moveFinalDungeonBats(bat bats[], int grid[ROWS][COLS], GameState *state, int yohanePos[], int lailapsPos[], int switchesActivated){
+    int i, j;
+    int directionCount = 0;
+    float damage = 0.0;
+    int attacked = 0;
+
+    if (switchesActivated == 0){
+        directionCount = 4;
+        damage = 0.5;
+    } else if (switchesActivated == 1){
+        directionCount = 4;
+        damage = 1.0;
+    } else {
+        directionCount = 8;
+        damage = 1.5;
+    }
+
+    if (hasPassiveItem(state, ITEM_BAT)){
+        damage = 0.5;
+    }
+
+    int directions[8][2] = {
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1},
+        {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
+    };
+
+    for (i = 0; i < MAX_BATS; i++){
+        if (bats[i].alive == 1){
+            int batX = bats[i].x;
+            int batY = bats[i].y;
+            int moved = 0;
+
+            for (j = 0; j < directionCount && attacked == 0; j++){
+                int adjX = batX + directions[j][0];
+                int adjY = batY + directions[j][1];
+
+                if ((adjX == yohanePos[0] && adjY == yohanePos[1]) ||
+                    (adjX == lailapsPos[0] && adjY == lailapsPos[1])){
+                        if (adjX == yohanePos[0] && adjY == yohanePos[1]){
+                            printf("A bat attacked Yohane! (-%.1f HP)\n", damage);
+                            state->hp -= damage;
+                            checkChocoRevive(state);
+                            if (state->hp <= 0){
+                                triggerDeath(state, "Bat (Final Dungeon)");
+                            }
+                        } else {
+                            printf("A bat attacked Lailaps! Game over.\n");
+                            triggerDeath(state, "Bat (Lailaps)");
+                        }
+
+                        bats[i].attack = 1;
+                        attacked = 1;
+                        grid[batX][batY] = 3;
+                    }
+                }
+
+                if (attacked == 0){
+                    for (j = 0; j < directionCount && moved == 0; j++){
+                        int dir = rand() % directionCount;
+                        int newX = batX + directions[dir][0];
+                        int newY = batY + directions[dir][1];
+
+                        if (newX >= 0 && newX < ROWS && newY >= 0 && newY < COLS){
+                            if (grid[newX][newY] == 0 &&
+                                !(newX == yohanePos[0] && newY == yohanePos[1]) &&
+                                !(newX == lailapsPos[0] && newY == lailapsPos[1])) {
+                                    grid[batX][batY] = 0;
+                                    grid[newX][newY] = 3;
+
+                                    bats[i].x = newX;
+                                    bats[i].y = newY;
+                                    moved = 1;
+                                }
+                        }
+                    }
+                }
+        }
+    }
 }
