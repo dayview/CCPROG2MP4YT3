@@ -931,9 +931,9 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
 
         for (i = startIndex; i < endIndex; i++) {
             if (earned[i]) {
-                printf("[%2d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "EARNED!");
+                printf("[%d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "EARNED!");
             } else {
-                printf("[%2d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "NOT EARNED!");
+                printf("[%d] %-35s %s\n", i - startIndex + 1, achievementNames[i], "NOT EARNED!");
             }
         }
 

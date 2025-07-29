@@ -27,7 +27,12 @@ int main(){
     "Mitaiken Horizon!", "Ruby-chan! Hai? Nani ga suki?", "Step! ZERO to ONE!"
     }; // L
 
-    int saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
+    int saveExists = 0;
+    FILE *test = fopen("saveFile.dat", "rb");
+    if (test != NULL){
+        fclose(test);
+        saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
+    }
     int keepRunning = 1;
     char input;
 
