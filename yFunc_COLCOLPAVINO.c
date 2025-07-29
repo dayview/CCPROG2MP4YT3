@@ -1,7 +1,7 @@
 // ONCE SIREN HAS BEEN KILLED NO MORE BATS, AND PRIORITIZE YOHANE'S POSITION (but it's better to prioritize both positions, if possible)
 #include "yHeader_COLCOLPAVINO.h"
 
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonName[], int *finalBossVictories, const char *idolNames[]){
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories, const char *idolNames[]){
     int done = 0;
     char choice;
 
@@ -13,7 +13,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
 
             done = 1;
         } else {
-            displayDungeonSelection(state, rescuedIdols, state->selectedIdols, dungeonName);
+            displayDungeonSelection(state, rescuedIdols, state->selectedIdols, dungeonNames);
             scanf(" %c", &choice);
 
             if (choice == 'I' || choice == 'i'){
@@ -28,7 +28,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
                 if (state->doneDungeons[dungeonIndex] == 0){
                     Dungeon dungeon;
                     startDungeon(&dungeon, dungeonIndex);
-                    dungeonLoop(&dungeon, state, dungeonIndex, rescuedIdols, dungeonName, idolNames);
+                    dungeonLoop(&dungeon, state, dungeonIndex, rescuedIdols, achievements, dungeonNames, idolNames);
                 } else {
                     printf("That dungeon has already been cleared.\n");
                 }
@@ -872,24 +872,54 @@ void postDungeonFeedback(int idolID, const char *idolNames[]){
 } // L
 
 void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]){
-
     int i;
     int currentPage = 0;
     int achievementsPerPage = 8;
     int totalPages = (totalAchievements + achievementsPerPage-1) / achievementsPerPage;
     int done = 0;
-    char choice;
+    char choice[10];
+    const char *descriptions[28] = {
+        "Cleared first dungeon",                   // 1
+        "Rescued Chika for the first time",        // 2
+        "Rescued Riko for the first time",         // 3
+        "Rescued You for the first time",          // 4
+        "Rescued Hanamaru for the first time",     // 5
+        "Rescued Ruby for the first time",         // 6
+        "Rescued Dia for the first time",          // 7
+        "Rescued Kanan for the first time",        // 8
+        "Rescued Mari for the first time",         // 9
+        "Beat the Final boss for the first time",  // 10
+        "Rescued Chika twice",                     // 11
+        "Rescued Riko twice",                      // 12
+        "Rescued You twice",                       // 13
+        "Rescued Hanamaru twice",                  // 14
+        "Rescued Ruby twice",                      // 15
+        "Rescued Dia twice",                       // 16
+        "Rescued Kanan twice",                     // 17
+        "Rescued Mari twice",                      // 18
+        "Beat the Final boss twice",               // 19
+        "Clear 10 dungeons",                       // 20
+        "Rescued Chika, You, and Ruby",            // 21
+        "Rescued Hanamaru, Dia, and Kanan",        // 22
+        "Rescued Riko and Mari",                   // 23
+        "Rescue all Aqours members",               // 24
+        "Clear a dungeon without damage",          // 25
+        "Spent 5000G at Hanamaru’s shop",          // 26
+        "Saved by Ruby’s choco-mint ice cream",    // 27
+        "Complete a run with 0G remaining"         // 28
+    };
 
     while (done == 0){
-        int count = 0;
+        int earnedCount = 0;
         for (i = 0; i < totalAchievements; i++){
-            if (earned[i])
-                count++;
+            if (earned[i]){
+                earnedCount++;
+            }
         }
 
         printf("**************************************************\n");
         printf("               Achievements Module\n");
-        printf("               Obtained: %d / %d\n", count, totalAchievements);
+        printf("               Obtained: %d / %d\n", earnedCount, totalAchievements);
         printf("**************************************************\n");
 
         int startIndex = currentPage * achievementsPerPage;
@@ -900,40 +930,50 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
 
         for (i = startIndex; i < endIndex; i++){
             if (earned[i]){
-                printf("[%2d] %-35s %s\n", i+1, achievementNames[i], "EARNED!");
+                printf("[%2d] %-35s %s\n", i-startIndex+1, achievementNames[i], "EARNED!");
             } else {
-                printf("[%2d] %-35s %s\n", i+1, achievementNames[i], "NOT EARNED!");
+                printf("[%2d] %-35s %s\n", i-startIndex+1, achievementNames[i], "NOT EARNED!");
             }
         }
 
         printf("\nPage %d of %d\n", currentPage+1, totalPages);
         printf("[N]ext Page\t[P]revious Page\t[R]eturn to Main Menu\n");
         printf("Choice: ");
-        scanf(" %c", &choice);
+        scanf("%s", choice);
 
-        switch (choice){
-            case 'N':
-            case 'n':
-                if (currentPage < totalPages-1){
-                    currentPage++;
+        if (strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0){
+            if (currentPage < totalPages-1){
+                currentPage++;
+            } else {
+                printf("Already on last page.\n");
+            }
+        } else if (strcmp(choice, "P") == 0 || strcmp(choice, "p") == 0){
+            if (currentPage > 0){
+                currentPage--;
+            } else {
+                printf("Already on first page.\n");
+            }
+        } else if (strcmp(choice, "R") == 0 || strcmp(choice, "r") == 0){
+            done = 1;
+        } else {
+            int num = atoi(choice);
+            if (num >= 1 && num <= achievementsPerPage && startIndex+num-1 < totalAchievements){
+                int actualIndex = startIndex+num-1;
+                printf("\n************************************************************\n");
+                printf("Achievement Name: %s\n", achievementNames[actualIndex]);
+                if (earned[actualIndex]){
+                    printf("STATUS: EARNED!\n");
+                    printf("Date Earned: test\n"); // to implement
                 } else {
-                    printf("Already on last page.\n");
+                    printf("STATUS: NOT EARNED!\n");
                 }
-                break;
-            case 'P':
-            case 'p':
-                if (currentPage > 0){
-                    currentPage--;
-                } else {
-                    printf("Already on first page.\n");
-                }
-                break;
-            case 'R':
-            case 'r':
-                done = 1;
-                break;
-            default:
-                printf("Invalid input. Try again.\n");
+                printf("\nDescription:\n%s\n", descriptions[actualIndex]);
+                printf("\n[R]eturn to Achievements Module\n");
+                printf("Choice: ");
+                scanf("%s", choice);
+            } else {
+                printf("Invalid choice.\n");
+            }
         }
     }
 } // L
@@ -1621,7 +1661,7 @@ void getItemInfo(GameState *state, int itemID, char *name, int *qty){
     }
 }
 
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *dungeonName[], const char *idolNames[]){
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], int achievements[], const char *dungeonName[], const char *idolNames[]){
     int done = 0;
     char input;
 
@@ -1635,7 +1675,7 @@ void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int res
 
         if (state->isGameOver == 1){
             printf("\nYohane has fallen! Returning to main menu...\n");
-            saveGameFile(state, NULL, NULL);
+            saveGameFile(state, rescuedIdols, achievements);
             done = 1;
         }
 

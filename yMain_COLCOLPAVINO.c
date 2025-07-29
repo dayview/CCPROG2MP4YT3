@@ -16,7 +16,7 @@ int main(){
     "Nagahama Castle Ruins", "Numazugoyotei", "Uchiura Bay Pier", "Awashima Marine Park"
     }; // M
 
-    const char *achievementNames[28] = { // FIXED: define achievement names
+    const char *achievementNames[28] = {
     "Yohane Descends!", "Mikan Power!", "Riko-chan BEAM!", "Yousoro!",
     "It’s the future, zura!", "Ganbaruby!", "Buu-buu desu wa!", "Hug!!!",
     "Shiny!", "In This Unstable World!", "One more sunshine story!",

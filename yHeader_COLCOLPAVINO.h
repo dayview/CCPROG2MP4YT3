@@ -1,5 +1,5 @@
-#ifndef YHEADER_COLCOLPAVINO_H
-#define YHEADER_COLCOLPAVINO_H
+// #ifndef YHEADER_COLCOLPAVINO_H
+// #define YHEADER_COLCOLPAVINO_H
 
 #include <stdio.h>
 #include <string.h>
@@ -102,7 +102,7 @@ int nextFloor(Dungeon *dungeon);
 void generateEmptyDungeon(Dungeon *dungeon);
 void randomTile(Dungeon *dungeon, char tile);
 void placeRandomTile(Dungeon *dungeon, char tile, int count);
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *dungeonName[], const char *idolNames[]);
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], int achievements[], const char *dungeonName[], const char *idolNames[]);
 
 // Final Dungeon
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories);
@@ -128,9 +128,10 @@ void useItemInHand(GameState *state);
 void useItem(GameState *state, int item);
 int hasPassiveItem(GameState *state, int itemID);
 int countItem(GameState *state, int itemID);
+void getItemInfo(GameState *state, int itemID, char *name, int *qty);
 
 // Shop
-void hanamaruShop(GameState *state, int rescuedIdols[], int achivements[]);
+void hanamaruShop(GameState *state, int rescuedIdols[], int achievements[]);
 
 // Death & Revive
 void checkChocoRevive(GameState *state);
@@ -139,7 +140,7 @@ void triggerDeath(GameState *state, const char *cause);
 // Achievements
 void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]);
 void unlockAchievement(int earned[], int index, const char *message);
-void checkRescueAchievements(int rescuedIdols[], int earned[], int totalDungeonsCleared);
+void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol);
 void checkMilestoneAchievements(GameState *state, int earned[], int totalDungeonsCleared);
 void checkDamageLessDungeonAchievement(int dungeonDamage, int earned[]);
 void checkShopSpendingAchievement(int totalShopSpending, int earned[]);
@@ -153,9 +154,8 @@ void markDungeonClear(GameState *state, int dungeonIndex);
 void characterProfile(int choice);
 int allIdolsRescued(int rescuedIdols[]);
 void resetIdolSelection(int rescuedIdols[]);
-void getItemInfo(GameState *state, int itemID, char *name, int *qty);
 
 // Post Dungeon
 void postDungeonFeedback(int idolID, const char *idolNames[]);
 
-#endif
+// #endif
