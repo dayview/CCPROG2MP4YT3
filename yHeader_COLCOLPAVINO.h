@@ -291,7 +291,7 @@ Precondition: Grid and bat array must be valid; positions must not overlap with 
 @param yohanePos Position of Yohane.
 @param lailapsPos Position of Lailaps.
 @return None */
-void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int switchesActivated, int sirenPos[], int yohanePos[], int lailapsPos[]);
+void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int sirenPos[], int yohanePos[], int lailapsPos[]);
 
 /* Controls the behavior and movement of bats in the final dungeon based on switch progress.
 Precondition: All pointers and arrays must be valid; bats must be initialized.

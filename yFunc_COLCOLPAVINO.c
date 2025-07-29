@@ -1,4 +1,3 @@
-// ONCE SIREN HAS BEEN KILLED NO MORE BATS, AND PRIORITIZE YOHANE'S POSITION (but it's better to prioritize both positions, if possible)
 #include "yHeader_COLCOLPAVINO.h"
 
 void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories, const char *idolNames[]){
@@ -532,7 +531,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
         turnCount++;
 
         if (turnCount % 8 == 0 && sirenDefeated == 0){
-            spawnBatFinalDungeon(grid, bats, switchesActivated, sirenPos, yohanePos, lailapsPos);
+            spawnBatFinalDungeon(grid, bats, sirenPos, yohanePos, lailapsPos);
         }
 
         moveFinalDungeonBats(bats, grid, state, yohanePos, lailapsPos, switchesActivated);
@@ -1081,7 +1080,7 @@ void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], i
     sirenPos[1] = 4;
 } // L
 
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int grid[ROWS][COLS]){
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int grid[ROWS][COLS]) {
     int i, j;
 
     printf("\n===========================================================\n");
@@ -1092,22 +1091,23 @@ void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int 
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLS; j++) {
             if (i == yohanePos[0] && j == yohanePos[1])
-                printf("Y ");
+                printf("\033[0;37mY \033[0m"); // White for Yohane
             else if (i == lailapsPos[0] && j == lailapsPos[1])
-                printf("L ");
+                printf("\033[0;36mL \033[0m"); // Cyan for Lailaps
             else if (i == sirenPos[0] && j == sirenPos[1])
-                printf("S ");
+                printf("\033[0;31mS \033[0m"); // Red for Siren
             else if (grid[i][j] == 1)
-                printf("0 ");
+                printf("\033[1;33m0 \033[0m"); // Yellow for switches
             else if (grid[i][j] == 2)
-                printf("* ");
+                printf("\033[1;30m* \033[0m"); // Gray for walls
             else if (grid[i][j] == 3)
-                printf("b ");
+                printf("\033[0;31mb \033[0m"); // Red for bats
             else
                 printf(". ");
         }
         printf("\n");
     }
+
     printf("\nControls: [W] Up [A] Left [S] Down [D] Right [X]Stay\n");
 } // L
 
@@ -1736,7 +1736,7 @@ void placeRandomTile(Dungeon *dungeon, char tile, int count)
 	}
 }
 
-void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int switchesActivated, int sirenPos[], int yohanePos[], int lailapsPos[]){
+void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int sirenPos[], int yohanePos[], int lailapsPos[]){
     int i, x, y;
     int placed = 0;
 
