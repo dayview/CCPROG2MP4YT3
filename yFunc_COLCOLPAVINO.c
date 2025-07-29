@@ -1082,14 +1082,15 @@ void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], i
 } // L
 
 void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int grid[ROWS][COLS]){
-
     int i, j;
-    
-    printf("\n=== FINAL DUNGEON ===\n");
-    printf("Yohane (Y) and Lailaps (L) must activate all switches (0) to unlock the Siren (S)!\n\n");
 
-    for (i = 0; i < 10; i++){
-        for (j = 0; j < 10; j++){
+    printf("\n===========================================================\n");
+    printf("===                FINAL DUNGEON DISPLAY               ===\n");
+    printf("===  Activate all switches (0) to unlock the Siren (S) ===\n");
+    printf("===========================================================\n\n");
+
+    for (i = 0; i < ROWS; i++) {
+        for (j = 0; j < COLS; j++) {
             if (i == yohanePos[0] && j == yohanePos[1])
                 printf("Y ");
             else if (i == lailapsPos[0] && j == lailapsPos[1])
@@ -1100,12 +1101,14 @@ void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int 
                 printf("0 ");
             else if (grid[i][j] == 2)
                 printf("* ");
+            else if (grid[i][j] == 3)
+                printf("b ");
             else
                 printf(". ");
         }
         printf("\n");
     }
-    printf("\nControls: WASD\n");
+    printf("\nControls: [W] Up [A] Left [S] Down [D] Right [X]Stay\n");
 } // L
 
 int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[ROWS][COLS]){
