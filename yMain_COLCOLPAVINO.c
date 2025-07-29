@@ -1,43 +1,136 @@
 #include "yHeader_COLCOLPAVINO.h"
-#include "yFunc_COLCOLPAVINO.c"
 
 int main(){
-    int choice;
-    int keepRunning = 1;
     GameState game;
     int rescuedIdols[MAX_IDOLS] = {0};
     int achievements[30] = {0};
 
-    int saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
+    const char *Idols[MAX_IDOLS] = {
+    "Chika", "Riko", "You", "Hanamaru", 
+    "Ruby", "Dia", "Kanan", "Mari"
+    }; // M & L
 
-    while (keepRunning){
-        MainMenu(saveExists, &choice);
+const char *dungeonNames[MAX_IDOLS] = {
+    "Yasudaya Ryokan", "Numazu Deep Sea Aquarium", "Izu-Mito Sea Paradise", "Shougetsu Confectionary", 
+    "Nagahama Castle Ruins", "Numazugoyotei", "Uchiura Bay Pier", "Awashima Marine Park"
+    }; // M
+
+    int saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
+    int keepRunning = 1;
+    char input;
+
+    while (keepRunning == 1){
+        printf("\n************************************************\n");
+        printf("*            Yohane The Parhelion!            *\n");
+        printf("*       The Siren in the Mirror World!        *\n");
+        printf("************************************************\n");
+
+        if (saveExists){
+            printf("    [C]ontinue\n");
+        } else {
+            printf("    [N]ew Game\n");
+        }
+
+        printf("    [V]iew Achievements\n");
+        printf("    [P]rofile Viewer\n");
+        printf("    [Q]uit\n");
+        printf("Your choice: ");
+        scanf(" %c", &input);
 
         switch (choice){
-            case 1:
+            case 'C': case 'c':
+            if (saveExists){
                 printf("Continuing game...\n");
-                // continue game logic
-                keepRunning = 0;
-                break;
-            case 2:
-                // new game logic
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames);
+            } else {
+                printf("No saved game found. Please start a new game.\n");
+            }
+            break;
+
+            case 'N': case 'n':
                 printf("Starting new game...\n");
-                setNewGame(&game, idolNames);
+                setNewGame(&game, Idols);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames);
+                saveExists = 1;
                 break;
-            case 3:
-                // view achievements
+
+            case 'V': case 'v':
                 printf("Viewing achievements...\n");
                 displayAchievements(achievements, 28, NULL);
                 break;
-            case 4:
-                // quit game
+
+            case 'P': case 'p': {
+                char profileChoice = ' ';
+
+                do {
+                    printf("\n=== Profile Viewer ===\n");
+                    printf("Select a character to view:\n");
+                    printf("[1] Yohane\n");
+                    printf("[2] Lailaps\n");
+                    printf("[3] Chika\n");
+                    printf("[4] You\n");
+                    printf("[5] Riko\n");
+                    printf("[6] Hanamaru\n");
+                    printf("[7] Ruby\n");
+                    printf("[8] Dia\n");
+                    printf("[9] Kanan\n");
+                    printf("[10] Mari\n");
+                    printf("[R]eturn\n");
+                    printf("Choice: ");
+                    scanf(" %c", &profileChoice);
+
+                    switch (profileChoice){
+                        case '1':
+                            characterProfile(1);
+                            break;
+                        case '2':
+                            characterProfile(2);
+                            break;
+                        case '3':
+                            characterProfile(3);
+                            break;
+                        case '4':
+                            characterProfile(4);
+                            break;
+                        case '5':
+                            characterProfile(5);
+                            break;
+                        case '6':
+                            characterProfile(6);
+                            break;
+                        case '7':
+                            characterProfile(7);
+                            break;
+                        case '8':
+                            characterProfile(8);
+                            break;
+                        case '9':
+                            characterProfile(9);
+                            break;
+                        case '10':
+                            characterProfile(10);
+                            break;
+                        case 'R':
+                        case 'r':
+                            break;
+                        default:
+                            printf("Invalid input.\n");
+                            break;
+                    }
+                } while (profileChoice != '0');
+                break;
+            }
+
+            case 'Q':
+            case 'q':
                 printf("Quitting the game. Goodbye!\n");
                 keepRunning = 0;
                 break;
+            
             default:
                 printf("Invalid input. Please try again.\n");
                 break;
         }
-        return 0;
     }
+    return 0;
 }
