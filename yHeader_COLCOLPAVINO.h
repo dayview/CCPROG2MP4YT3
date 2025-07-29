@@ -90,11 +90,11 @@ int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 
 // Game Initialization
 void setNewGame(GameState *state, const char *idolNames[]);
-void carryOverProgress(int rescuedIdols[], GameState *state);
+void carryOverProgress(GameState *state);
 int duplicateCheck(int selected[], int count, int val);
 
 // Dungeon
-void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon);
+void startDungeon(Dungeon *dungeon, int currentDungeon);
 void dungeonMenu(GameState *state, const char *dungeonNames[]);
 void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *idolNames[]);
 void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const char *dungeonName[]);
@@ -107,7 +107,7 @@ void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int res
 // Final Dungeon
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories);
 void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[]);
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[ROWS][COLS]);
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int grid[ROWS][COLS]);
 void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[ROWS][COLS]);
 void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[], GameState *state);
 int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[ROWS][COLS]);

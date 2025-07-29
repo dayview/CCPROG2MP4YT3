@@ -171,6 +171,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 	int reward, gold; //for treasure
 	int inv, i;
 	int found = 0;
+    int pickupGold;
 	
 	switch(input)
 	{
@@ -261,7 +262,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 				else
 				{
 					printf("You break through a spike trap! (-0.5 HP)\n");
-					state->hp -= 0.5;	
+					state->hp -= 0.5f;	
 					checkChocoRevive(state);
 					
 					if (state->hp <= 0)
@@ -332,15 +333,16 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 				break;
 				
 			case 'g':
-				if(currentDungeon == 0)
-			        state->gold += 5;
-			    else if(currentDungeon == 1)
-			        state->gold += 10;
-			    else
-			        state->gold += 15;
-				
-				printf("You picked up %d gold! Total gold: %d\n", state->gold);
-		    
+				if(currentDungeon == 0){
+			        pickupGold = 5;
+                } else if(currentDungeon == 1) {
+			        pickupGold = 10;
+                } else {
+			        pickupGold = 15;
+                }
+
+                state->gold += pickupGold;
+				printf("You picked up %d gold! Total gold: %d\n", pickupGold, state->gold);
 			    dungeon->map[x][y] = '.'; // Remove gold icon after pickup
 			    break;	
 		}
@@ -358,7 +360,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 		if(!hasPassiveItem(state, ITEM_AIR))
 		{
 			printf("You stood on a heat tile! (-1 HP)\n");
-			state->hp -= 1; 
+			state->hp -= 1.0f; 
 			checkChocoRevive(state);
 			
 			if(state->hp <= 0)
@@ -419,7 +421,7 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
 
     getItemInfo(state, state->currentItem, itemName, &itemQty);
 
-    printf("\nDungeon #%d: %s\n", dungeonNumber+1, dungeonName);
+    printf("\nDungeon #%d: %s\n", dungeonNumber+1, dungeonName[dungeonNumber]);
     printf("Floor %d of %d\n\n", dungeon->floor, dungeon->maxFloor);
     printf("HP: %.1f / %d\t\tTotal Gold: %d GP\n", state->hp, state->maxHP, state->gold);
     printf("Item on hand: %s", itemName);
@@ -439,7 +441,7 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
 	}
 } // L & M
 
-void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon) //current is tracker for how many dungeon already cleared
+void startDungeon(Dungeon *dungeon, int currentDungeon) // current is tracker for how many dungeon already cleared
 {
 	int batCount;
 	dungeon->floor = 1;
@@ -590,9 +592,9 @@ void useItem(GameState *state, int item)
         case ITEM_TEARS:
             if(state->hp < state->maxHP)
             {
-                state->hp += 0.5;
+                state->hp += 0.5f;
                 if(state->hp > state->maxHP)
-                    state->hp = state->maxHP;
+                    state->hp = (float)state->maxHP;
                 printf("Yohane used Tears of the fallen Angel. Heals +0.5 HP\n");
             }
             else
@@ -602,9 +604,9 @@ void useItem(GameState *state, int item)
         case ITEM_NOPPO:
             if(state->hp < state->maxHP)
             {
-                state->hp += 0.5;
+                state->hp += 0.5f;
                 if(state->hp > state->maxHP)
-                    state->hp = state->maxHP;
+                    state->hp = (float) state->maxHP;
                 printf("Yohane used Noppo Bread. Heals +0.5 HP\n");
             }
             else
@@ -615,7 +617,6 @@ void useItem(GameState *state, int item)
 } // M 
 
 void displayInventory(GameState *state){
-    int i;
     char itemName[50] = "N/A";
     int currentQty = 0;
 
@@ -947,7 +948,6 @@ void unlockAchievement(int earned[], int index, const char *message){
 
 void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonName[]){
     int i;
-    int tear = 0, noppo = 0, choco = 0;
     char itemName[50] = "N/A";
     int currentQty = 0;
 
@@ -1020,7 +1020,7 @@ void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], i
     sirenPos[1] = 4;
 } // L
 
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[ROWS][COLS]){
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int sirenPos[], int grid[ROWS][COLS]){
 
     int i, j;
     
@@ -1156,7 +1156,7 @@ void handleSirenDefeat(GameState *state, int earned[], Dungeon *finalDungeon, in
     if (finalDungeon != NULL){
         while (!placed){
             x = rand() % (ROWS-2) + 1;
-            y = rand() & (COLS-2) + 1;
+            y = rand() % (COLS-2) + 1;
             if (finalDungeon->map[x][y] == TILE_PASSABLE){
                 finalDungeon->map[x][y] = TILE_EXIT;
                 placed = 1;
@@ -1419,7 +1419,7 @@ void characterProfile(int choice){
         }
 } // L
 
-void carryOverProgress(int rescuedIdols[], GameState *state){
+void carryOverProgress(GameState *state){
 
     printf("Progress carried over to new playthrough!\n");
 
@@ -1456,7 +1456,7 @@ void carryOverProgress(int rescuedIdols[], GameState *state){
         printf("- Tears of a Fallen Angel: %d\n", tearCount);
     if (noppoCount > 0)
         printf("- Noppo Bread: %d\n", noppoCount);
-} // l
+} // L
 
 int allIdolsRescued(int rescuedIdols[]){
     int i;
@@ -1643,4 +1643,31 @@ void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const c
             done = 1;
         }
     }
+}
+
+void randomTile(Dungeon *dungeon, char tile)
+{
+	int x,y;
+	do
+	{
+		x = rand() % (ROWS - 2) + 1;
+		y = rand() % (COLS - 2) + 1;
+	} while (dungeon->map[x][y] != '.');
+	
+	dungeon->map[x][y] = tile;
+}
+
+void placeRandomTile(Dungeon *dungeon, char tile, int count)
+{
+	int i,x,y;
+	for(i = 0; i < count; i++)
+	{
+		do
+		{
+			x = rand() % (ROWS - 2) + 1;
+			y = rand() % (COLS - 2) + 1;
+		} while (dungeon->map[x][y] != '.');
+		
+		dungeon->map[x][y] = tile;
+	}
 }
