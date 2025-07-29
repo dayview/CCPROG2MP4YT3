@@ -227,7 +227,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 	//check for out of bounce
 	if (x < 0 || x >= ROWS || y < 0 || y >= COLS)
 	{
-		printf("Out of bounce. Stay inside the dungeon\n");
+		printf("Out of bounds. Stay inside the dungeon\n");
 		move = 0;
 	}
 	
@@ -280,22 +280,11 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 					printf("You gained %d gold\n",gold);
 					state->gold += gold;
 				} else {
-					int itemType;
-                    int roll = rand() % 2;
-
-                    if (roll == 0)
-                        itemType = ITEM_NOPPO;
-                    else
-                        itemType = ITEM_TEARS;
-
-                    if (itemType == ITEM_NOPPO)
-                        printf("You found Noppo Bread!\n");
-                    else
-                        printf("You found Tears of a Fallen Angel!\n");
+                    printf("You found Noppo Bread!\n");
 
                     for (inv = 0; inv < MAX_ITEMS; inv++){
                         if (found == 0 && state->inventory[inv] == 0){
-                            state->inventory[inv] = itemType;
+                            state->inventory[inv] = ITEM_NOPPO;
                             found = 1;
                         }
                     }
@@ -492,7 +481,7 @@ void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon) //curr
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories){
     int yohanePos[2], lailapsPos[2], sirenPos[2];
     int switches[6];
-    int grid[10][10];
+    int grid[ROWS][COLS];
     int switchesActivated = 0;
     char input;
     int sirenDefeated = 0;
@@ -500,8 +489,8 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
     int turnCount = 0;
 
     int i, j;
-    for (i = 0; i < 10; i++)
-        for (j = 0; j < 10; j++)
+    for (i = 0; i < ROWS; i++)
+        for (j = 0; j < COLS; j++)
             grid[i][j] = 0;
 
     bat bats[MAX_BATS];
@@ -574,7 +563,7 @@ int nextFloor(Dungeon *dungeon)
 	return floors;
 } // M
 
-/void dungeonMenu(GameState *state, const char *dungeonNames[])
+void dungeonMenu(GameState *state, const char *dungeonNames[])
 {
 	int i, index;
 	printf("Lailaps: Yohane! Where should we go to now?\n");
@@ -1555,3 +1544,82 @@ void hanamaruShop(GameState *state, int rescuedIdols[]){
         printf("Purchase cancelled.\n");
     }
 } // L
+
+void handleFinalBattle(FinalBattle *battle, char map[][50], int mapRows, int mapCols){
+    int i, j, valid = 0;
+    char temp;
+
+    if (battle->currentSwitchPair < MAX_SWITCHES){
+        if (map[battle->yohane.y][battle->yohane.x] == '0' &&
+            map[battle->lailaps.y][battle->lailaps.x] == '0'){
+                map[battle->yohane.y][battle->yohane.x] = 'Y';
+                map[battle->lailaps.y][battle->lailaps.x] = 'L';
+                battle->currentSwitchPair++;
+                battle->switchesTriggered++;
+    }
+
+    if (battle->currentSwitchPair < MAX_SWITCHES){
+        Position s1, s2;
+        while (valid == 0){
+            s1.x = rand() % mapCols;
+            s1.y = rand() % mapRows;
+            s2.x = s1.x + (rand() % 6 - 2);
+            s2.y = s1.y + (rand() % 3 - 1);
+
+            if (s2.x < 0 || s2.x >= mapCols || s2.y < 0 || s2.y >= mapRows)
+                continue; // refactor
+
+            if (map[s1.y][s1.x] == '.' && map[s2.y][s2.x] == '.' &&
+                (s1.x != battle->yohane.x || s1.y != battle->yohane.y) &&
+                (s2.x != battle->lailaps.x || s2.y != battle->lailaps.y)){
+                    battle->switches[battle->currentSwitchPair][0] = s1;
+                    battle->switches[battle->currentSwitchPair][1] = s2;
+                    map[s1.y][s1.x] = '0';
+                    map[s2.y][s2.x] = '0';
+                    valid = 1;
+                }
+            }
+        }
+    } else if (battle->barrierBroken == 0){
+        map[battle->siren.y][battle->siren.x] = 'S';
+        battle->sirenActive = 1;
+        battle->barrierBroken = 1;
+    }
+
+    if (battle->sirenActive == 1){
+        int dx = 0, dy = 0;
+
+        if (battle->yohane.x > battle->siren.x)
+            dx = 1;
+        else if (battle->yohane.x < battle->siren.x)
+            dx = -1;
+        
+        if (battle->yohane.y > battle->siren.y)
+            dy = 1;
+        else if (battle->yohane.y < battle->siren.y)
+            dy = -1;
+        
+        map[battle->siren.y][battle->siren.x] = '.';
+        battle->siren.x += dx;
+        battle->siren.y += dy;
+
+        if (map[battle->siren.y][battle->siren.x] == 'Y' ||
+            map[battle->siren.y][battle->siren.x] == 'L'){
+                // Game over will be handled by caller
+        } else {
+            map[battle->siren.y][battle->siren.x] = 'S';
+        }
+    }
+
+    if (battle->moveCounter != 0 && battle->moveCounter % 8 == 0){
+        for (i = 0; i < mapRows; i++){
+            for (j = 0; j < mapCols; j++){
+                if (map[i][j] == '.'){
+                    map[i][j] = 'b';
+                    return; // refactor
+                }
+            }
+        }
+    }
+}
+

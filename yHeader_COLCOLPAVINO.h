@@ -27,6 +27,9 @@
 #define TILE_TREASURE 'T'
 #define TILE_WALL 'v'
 
+// Final Dungeon Definitions
+#define MAX_SWITCHES 3
+
 // Item IDs
 #define ITEM_TEARS 1
 #define ITEM_NOPPO 2
@@ -74,6 +77,22 @@ typedef struct {
     int inventoryIndex;
     char description[100];
 } ShopItem; // L
+
+typedef struct {
+    int x, y;
+} Position;
+
+typedef struct {
+    Position yohane;
+    Position lailaps;
+    Position siren;
+    Position switches[MAX_SWITCHES][2];
+    int currentSwitchPair;
+    int moveCounter;
+    int barrierBroken;
+    int sirenActive;
+    int switchesTriggered;
+} FinalBattle;
 
 // Game Loop & Save/Load
 void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories);
