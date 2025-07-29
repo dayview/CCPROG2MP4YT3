@@ -8,8 +8,10 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
     while (!done && state->isGameOver == 0){
         if (checkAllDungeonsCleared(state)){
             printf("All dungeons cleared! Final dungeon unlocked.\n");
-            // todo: final dungeon handler
-            // finalDungeon(state, rescuedIdols, achievements);
+            
+            int finalBossVictories = 0;
+            startFinalDungeon(state, achievements, &finalBossVictories);
+
             done = 1;
         } else {
             displayDungeonSelection(state, rescuedIdols, state->selectedIdols, dungeonNames);
@@ -264,6 +266,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 					
 					if (state->hp <= 0)
                         triggerDeath(state, "Spike Trap");
+
                     checkChocoRevive(state);
 				}
 				dungeon->map[x][y] = '.';			
@@ -280,7 +283,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 					int itemType;
                     int roll = rand() % 2;
 
-                    if (roll = 0)
+                    if (roll == 0)
                         itemType = ITEM_NOPPO;
                     else
                         itemType = ITEM_TEARS;

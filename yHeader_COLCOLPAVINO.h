@@ -76,7 +76,7 @@ typedef struct {
 } ShopItem; // L
 
 // Game Loop & Save/Load
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[]);
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories);
 void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 

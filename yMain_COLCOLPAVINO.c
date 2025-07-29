@@ -4,6 +4,7 @@ int main(){
     GameState game;
     int rescuedIdols[MAX_IDOLS] = {0};
     int achievements[30] = {0};
+    int finalBossVictories = 0;
 
     const char *Idols[MAX_IDOLS] = {
     "Chika", "Riko", "You", "Hanamaru", 
@@ -37,7 +38,7 @@ const char *dungeonNames[MAX_IDOLS] = {
         printf("Your choice: ");
         scanf(" %c", &input);
 
-        switch (choice){
+        switch (input){
             case 'C': case 'c':
             if (saveExists){
                 printf("Continuing game...\n");
@@ -50,7 +51,7 @@ const char *dungeonNames[MAX_IDOLS] = {
             case 'N': case 'n':
                 printf("Starting new game...\n");
                 setNewGame(&game, Idols);
-                startGameLoop(&game, rescuedIdols, achievements, dungeonNames);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories);
                 saveExists = 1;
                 break;
 
