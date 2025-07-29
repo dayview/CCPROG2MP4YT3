@@ -1,9 +1,9 @@
 // ONCE SIREN HAS BEEN KILLED NO MORE BATS, AND PRIORITIZE YOHANE'S POSITION (but it's better to prioritize both positions, if possible)
 #include "yHeader_COLCOLPAVINO.h"
 
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonName[], int *finalBossVictories){
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonName[], int *finalBossVictories, const char *idolNames[]){
     int done = 0;
-    int choice;
+    char choice;
 
     while (!done && state->isGameOver == 0){
         if (checkAllDungeonsCleared(state)){
@@ -22,13 +22,13 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
                 saveGameFile(state, rescuedIdols, achievements);
                 done = 1;
             } else if ((choice == 'H' || choice == 'h') && rescuedIdols[3]){
-                hanamaruShop(state, rescuedIdols);
+                hanamaruShop(state, rescuedIdols, achievements);
             } else if (choice >= '1' && choice <= '3'){
                 int dungeonIndex = choice - '1';
                 if (state->doneDungeons[dungeonIndex] == 0){
                     Dungeon dungeon;
                     startDungeon(state, &dungeon, dungeonIndex);
-                    dungeonLoop(&dungeon, state, dungeonIndex, dungeonName[state->selectedIdols[dungeonIndex]]);
+                    dungeonLoop(&dungeon, state, dungeonIndex, rescuedIdols, dungeonName, idolNames);
                 } else {
                     printf("That dungeon has already been cleared.\n");
                 }
@@ -127,7 +127,7 @@ void checkChocoRevive(GameState *state)
 		for(i = 0; i < MAX_ITEMS; i++){
 			if(state->inventory[i] == ITEM_CHOCO){
 				state->inventory[i] = 0;
-				state->hp = state->maxHP;
+				state->hp = (float) state->maxHP;
 				state->usedChoco = 1;
 				printf("Choco-Mint Ice Cream revived Yohane! HP fully restored. \n");
 
@@ -162,7 +162,7 @@ int hasPassiveItem(GameState *state, int itemID)
 	return found;
 } // M
 
-void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon)
+void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *idolNames[])
 {
 	int x = dungeon->yohaneX;
 	int y = dungeon->yohaneY;
@@ -304,7 +304,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 					rescuedIdols[state->selectedIdols[currentDungeon]]++;
 					
                     checkRescueAchievements(rescuedIdols, state->inventory, state->selectedIdols[currentDungeon]);
-                    postDungeonFeedback(state->selectedIdols[currentDungeon], Idols);
+                    postDungeonFeedback(state->selectedIdols[currentDungeon], idolNames);
 				}
 				move = 0;	
 				break;
@@ -405,14 +405,14 @@ void generateEmptyDungeon(Dungeon *dungeon)
 	dungeon->yohaneY = 1;
 	dungeon->floor = 1;
 	
-	placeRandomTile(dungeon, TILE_WALL, 25);
-	placeRandomTile(dungeon, TILE_HEAT, 25);
-	placeRandomTile(dungeon, TILE_SPIKE, 25);
-	placeRandomTile(dungeon, TILE_WATER, 25);
+    randomTile(dungeon, TILE_WALL);
+    randomTile(dungeon, TILE_HEAT);
+    randomTile(dungeon, TILE_SPIKE);
+    randomTile(dungeon, TILE_WATER);
 	
 } // M
 
-void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const char *dungeonName){
+void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const char *dungeonName[]){
 	int i, j;
     char itemName[50] = "N/A";
     int itemQty = 0;
@@ -497,7 +497,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
         scanf(" %c", &input);
 
         moveYohaneAndLailaps(input, yohanePos, lailapsPos, grid);
-        moveSiren(sirenPos, yohanePos, lailapsPos);
+        moveSiren(sirenPos, yohanePos, lailapsPos, state);
 
         displayFinalDungeon(yohanePos, lailapsPos, switches, sirenPos, grid);
 
@@ -524,9 +524,10 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
             handleSirenDefeat(state, achievements, NULL, finalBossVictories);
         }
 
-
         if (sirenDefeated == 1 && grid[yohanePos[0]][yohanePos[1]] == TILE_EXIT){
             printf("You escaped the Mirror World!\n");
+            carryOverProgress(achievements, state);
+            resetIdolSelection(achievements);
             loop = 0;
         }
     }
@@ -614,7 +615,6 @@ void useItem(GameState *state, int item)
 } // M 
 
 void displayInventory(GameState *state){
-    int tear = 0, noppo = 0, choco = 0;
     int i;
     char itemName[50] = "N/A";
     int currentQty = 0;
@@ -945,7 +945,7 @@ void unlockAchievement(int earned[], int index, const char *message){
     }
 } // L
 
-void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonName){
+void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonName[]){
     int i;
     int tear = 0, noppo = 0, choco = 0;
     char itemName[50] = "N/A";
@@ -1020,7 +1020,7 @@ void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], i
     sirenPos[1] = 4;
 } // L
 
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[][10]){
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[ROWS][COLS]){
 
     int i, j;
     
@@ -1045,9 +1045,9 @@ void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int 
         printf("\n");
     }
     printf("\nControls: WASD\n");
-} // l
+} // L
 
-int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[][10]){
+int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[ROWS][COLS]){
 
     int i, active = 0;
 
@@ -1074,7 +1074,7 @@ int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int
     return active;
 } // L
 
-void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[10][10]){
+void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[ROWS][COLS]){
     int dx = 0, dy = 0;
 
     switch (input){
@@ -1166,11 +1166,11 @@ void handleSirenDefeat(GameState *state, int earned[], Dungeon *finalDungeon, in
         printf("Proceed to the exit to leave the mirror world...\n");
     } else {
         printf("Proceed to the exit to leave the mirror world...\n");
+        printf("A glowing portal appears where the Siren once stood.\n");
     }
-
 } // L 
 
-void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
+void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[], GameState *state){
 
     int targetRow, targetCol;
 
@@ -1193,6 +1193,19 @@ void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
         sirenPos[1]++;
     if (sirenPos[1] > targetCol)
         sirenPos[1]--;
+
+    if ((abs(sirenPos[0] - yohanePos[0]) + abs(sirenPos[1] - yohanePos[1])) == 1){
+        printf("The Siren attacked Yohane!\n");
+        checkChocoRevive(state);
+        if (state->hp <= 0){
+            triggerDeath(state, "Siren (Yohane)");
+        }
+    }
+    
+    if ((abs(sirenPos[0] - lailapsPos[0]) + abs(sirenPos[1] - lailapsPos[1])) == 1){
+        printf("The Siren attacked Lailaps! Instant Game Over.\n");
+        triggerDeath(state, "Siren (Lailaps)");
+    }
 } // L 
 
 void checkRescueAchievements(int rescuedIdols[], int earned[], int currentIdol){
@@ -1411,6 +1424,7 @@ void carryOverProgress(int rescuedIdols[], GameState *state){
     printf("Progress carried over to new playthrough!\n");
 
     state->maxHP = 3;
+    state->hp = 3.0;
     state->usedChoco = 0;
     state->currentItem = 0;
 
@@ -1422,6 +1436,11 @@ void carryOverProgress(int rescuedIdols[], GameState *state){
             state->inventory[i] = 0;
     }
 
+    for (i = 0; i < SELECTED_IDOLS; i++){
+        state->doneDungeons[i] = 0;
+    }
+
+    printf("Gold: %d GP\n", state->gold);
     printf("Items carried over:\n");
 
     int tearCount = 0, noppoCount = 0;
@@ -1461,7 +1480,7 @@ void resetIdolSelection(int rescuedIdols[]){
     }
 } // L
 
-void hanamaruShop(GameState *state, int rescuedIdols[]) {
+void hanamaruShop(GameState *state, int rescuedIdols[], int achievements[]){
     ShopItem shopItems[] = {
         {"Tears of a Fallen Angel", 30, -1, ITEM_TEARS, "Heals Yohane .5 HP"},
         {"Noppo Bread", 100, -1, ITEM_NOPPO, "Heals Yohane .5 HP"},
@@ -1554,7 +1573,7 @@ void hanamaruShop(GameState *state, int rescuedIdols[]) {
                             state->gold -= item->cost;
                             state->totalShopSpent += item->cost;
 
-                            checkShopSpendingAchievement(state->totalShopSpending, state->inventory);
+                            checkShopSpendingAchievement(state->totalShopSpent, achievements);
 
                             printf("Purchase successful! %s added to inventory.\n", item->name);
                             printf("Remaining Gold: %d GP\n", state->gold);
@@ -1602,7 +1621,7 @@ void getItemInfo(GameState *state, int itemID, char *name, int *qty){
     }
 }
 
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName){
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName[]){
     int done = 0;
     char input;
 
@@ -1612,7 +1631,7 @@ void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const c
         printf("Enter move (WASD, [ or ] to switch items, space to use, X to stay): ");
         scanf(" %c", &input);
 
-        movement(input, dungeon, state, currentDungeon);
+        movement(input, dungeon, state, currentDungeon, rescuedIdols, Idols);
 
         if (state->isGameOver == 1){
             printf("\nYohane has fallen! Returning to main menu...\n");

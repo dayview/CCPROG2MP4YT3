@@ -84,7 +84,7 @@ typedef struct {
 } Position;
 
 // Game Loop & Save/Load
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories);
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories, const char *idolNames[]);
 void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 int loadGameFile(GameState *state, int rescuedIdols[], int achievements[]);
 
@@ -96,20 +96,20 @@ int duplicateCheck(int selected[], int count, int val);
 // Dungeon
 void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon);
 void dungeonMenu(GameState *state, const char *dungeonNames[]);
-void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon);
-void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const char *dungeonName);
+void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *idolNames[]);
+void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const char *dungeonName[]);
 int nextFloor(Dungeon *dungeon);
 void generateEmptyDungeon(Dungeon *dungeon);
 void randomTile(Dungeon *dungeon, char tile);
 void placeRandomTile(Dungeon *dungeon, char tile);
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName);
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *dungeonName[], const char *idolNames[]);
 
 // Final Dungeon
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories);
 void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[]);
 void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[ROWS][COLS]);
 void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[ROWS][COLS]);
-void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]);
+void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[], GameState *state);
 int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[ROWS][COLS]);
 int checkSirenDefeat(int yohanePos[], int sirenPos[]);
 void handleSirenDefeat(GameState *state, int earned[], Dungeon *finalDungeon, int *finalBossVictories);
@@ -127,9 +127,10 @@ void switchItem(GameState *state, char direction);
 void useItemInHand(GameState *state);
 void useItem(GameState *state, int item);
 int hasPassiveItem(GameState *state, int itemID);
+int countItem(GameState *state, int itemID);
 
 // Shop
-void hanamaruShop(GameState *state, int rescuedIdols[]);
+void hanamaruShop(GameState *state, int rescuedIdols[], int achivements[]);
 
 // Death & Revive
 void checkChocoRevive(GameState *state);
@@ -146,7 +147,7 @@ void checkChocoMintSaveAchievement(int earned[]);
 void checkFinalBossAchievement(int finalBossVictories, int earned[]);
 
 // Utility
-void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonNames);
+void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonName[]);
 int checkAllDungeonsCleared(GameState *state);
 void markDungeonClear(GameState *state, int dungeonIndex);
 void characterProfile(int choice);

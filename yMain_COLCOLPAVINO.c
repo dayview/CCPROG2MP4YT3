@@ -68,7 +68,7 @@ int main(){
 
             case 'V': case 'v':
                 printf("Viewing achievements...\n");
-                displayAchievements(achievements, 28, NULL);
+                displayAchievements(achievements, 28, achievementNames);
                 break;
 
             case 'P': case 'p': {
