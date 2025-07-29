@@ -101,7 +101,7 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
 int nextFloor(Dungeon *dungeon);
 void generateEmptyDungeon(Dungeon *dungeon);
 void randomTile(Dungeon *dungeon, char tile);
-void placeRandomTile(Dungeon *dungeon, char tile);
+void placeRandomTile(Dungeon *dungeon, char tile, int count);
 void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *dungeonName[], const char *idolNames[]);
 
 // Final Dungeon

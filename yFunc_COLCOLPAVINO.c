@@ -27,7 +27,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
                 int dungeonIndex = choice - '1';
                 if (state->doneDungeons[dungeonIndex] == 0){
                     Dungeon dungeon;
-                    startDungeon(state, &dungeon, dungeonIndex);
+                    startDungeon(&dungeon, dungeonIndex);
                     dungeonLoop(&dungeon, state, dungeonIndex, rescuedIdols, dungeonName, idolNames);
                 } else {
                     printf("That dungeon has already been cleared.\n");
@@ -441,7 +441,7 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
 	}
 } // L & M
 
-void startDungeon(Dungeon *dungeon, int currentDungeon) // current is tracker for how many dungeon already cleared
+void startDungeon(Dungeon *dungeon, int currentDungeon) //current is tracker for how many dungeon already cleared
 {
 	int batCount;
 	dungeon->floor = 1;
@@ -465,7 +465,7 @@ void startDungeon(Dungeon *dungeon, int currentDungeon) // current is tracker fo
 		
 	randomTile(dungeon, TILE_TREASURE);
 	randomTile(dungeon, TILE_EXIT);
-} // M
+}
 
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories){
     int yohanePos[2], lailapsPos[2], sirenPos[2];
@@ -490,7 +490,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
         bats[i].alive = 0;
 
     initializeFinalDungeon(yohanePos, lailapsPos, switches, sirenPos);
-    displayFinalDungeon(yohanePos, lailapsPos, switches, sirenPos, grid);
+    displayFinalDungeon(yohanePos, lailapsPos, sirenPos, grid);
 
     printf("\nLailaps: Yohane, the Siren awaits. Be careful!\n");
 
@@ -501,7 +501,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
         moveYohaneAndLailaps(input, yohanePos, lailapsPos, grid);
         moveSiren(sirenPos, yohanePos, lailapsPos, state);
 
-        displayFinalDungeon(yohanePos, lailapsPos, switches, sirenPos, grid);
+        displayFinalDungeon(yohanePos, lailapsPos, sirenPos, grid);
 
         if (checkSwitchActivation(yohanePos, lailapsPos, switches, grid)){
             switchesActivated++;
@@ -528,7 +528,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
 
         if (sirenDefeated == 1 && grid[yohanePos[0]][yohanePos[1]] == TILE_EXIT){
             printf("You escaped the Mirror World!\n");
-            carryOverProgress(achievements, state);
+            carryOverProgress(state);
             resetIdolSelection(achievements);
             loop = 0;
         }
@@ -1621,7 +1621,7 @@ void getItemInfo(GameState *state, int itemID, char *name, int *qty){
     }
 }
 
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName[]){
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, int rescuedIdols[], const char *dungeonName[], const char *idolNames[]){
     int done = 0;
     char input;
 
@@ -1631,7 +1631,7 @@ void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const c
         printf("Enter move (WASD, [ or ] to switch items, space to use, X to stay): ");
         scanf(" %c", &input);
 
-        movement(input, dungeon, state, currentDungeon, rescuedIdols, Idols);
+        movement(input, dungeon, state, currentDungeon, rescuedIdols, idolNames);
 
         if (state->isGameOver == 1){
             printf("\nYohane has fallen! Returning to main menu...\n");
@@ -1657,7 +1657,7 @@ void randomTile(Dungeon *dungeon, char tile)
 	dungeon->map[x][y] = tile;
 }
 
-void placeRandomTile(Dungeon *dungeon, char tile, int count)
+void placeRandomTile(Dungeon *dungeon, char tile, int count) 
 {
 	int i,x,y;
 	for(i = 0; i < count; i++)

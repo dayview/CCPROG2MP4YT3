@@ -53,7 +53,7 @@ int main(){
             case 'C': case 'c':
             if (saveExists){
                 printf("Continuing game...\n");
-                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories, Idols);
             } else {
                 printf("No saved game found. Please start a new game.\n");
             }
@@ -62,7 +62,7 @@ int main(){
             case 'N': case 'n':
                 printf("Starting new game...\n");
                 setNewGame(&game, Idols);
-                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories, Idols);
                 saveExists = 1;
                 break;
 
@@ -87,7 +87,7 @@ int main(){
                     printf("[7] Ruby\n");
                     printf("[8] Dia\n");
                     printf("[9] Kanan\n");
-                    printf("[10] Mari\n");
+                    printf("[0] Mari\n");
                     printf("[R]eturn\n");
                     printf("Choice: ");
                     scanf(" %c", &profileChoice);
@@ -120,7 +120,7 @@ int main(){
                         case '9':
                             characterProfile(9);
                             break;
-                        case '10':
+                        case '0':
                             characterProfile(10);
                             break;
                         case 'R':
