@@ -53,6 +53,7 @@ typedef struct {
     int isGameOver;
     int batMoveCounter;
     char deathReason[30];
+    int totalShopSpent;
 } GameState; // M & L
 
 typedef struct {
@@ -101,7 +102,7 @@ int nextFloor(Dungeon *dungeon);
 void generateEmptyDungeon(Dungeon *dungeon);
 void randomTile(Dungeon *dungeon, char tile);
 void placeRandomTile(Dungeon *dungeon, char tile);
-void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon);
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName);
 
 // Final Dungeon
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories);

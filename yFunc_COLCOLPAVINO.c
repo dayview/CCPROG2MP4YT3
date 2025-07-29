@@ -1,7 +1,7 @@
 // ONCE SIREN HAS BEEN KILLED NO MORE BATS, AND PRIORITIZE YOHANE'S POSITION (but it's better to prioritize both positions, if possible)
 #include "yHeader_COLCOLPAVINO.h"
 
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories){
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonName[], int *finalBossVictories){
     int done = 0;
     int choice;
 
@@ -13,7 +13,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
 
             done = 1;
         } else {
-            displayDungeonSelection(state, rescuedIdols, state->selectedIdols, dungeonNames);
+            displayDungeonSelection(state, rescuedIdols, state->selectedIdols, dungeonName);
             scanf(" %c", &choice);
 
             if (choice == 'I' || choice == 'i'){
@@ -28,7 +28,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
                 if (state->doneDungeons[dungeonIndex] == 0){
                     Dungeon dungeon;
                     startDungeon(state, &dungeon, dungeonIndex);
-                    dungeonLoop(&dungeon, state, dungeonIndex);
+                    dungeonLoop(&dungeon, state, dungeonIndex, dungeonName[state->selectedIdols[dungeonIndex]]);
                 } else {
                     printf("That dungeon has already been cleared.\n");
                 }
@@ -130,7 +130,8 @@ void checkChocoRevive(GameState *state)
 				state->hp = state->maxHP;
 				state->usedChoco = 1;
 				printf("Choco-Mint Ice Cream revived Yohane! HP fully restored. \n");
-				
+
+                checkChocoMintSaveAchievement(state->inventory);
 			}
 		}
 	}
@@ -552,7 +553,7 @@ int nextFloor(Dungeon *dungeon)
 	return floors;
 } // M
 
-void dungeonMenu(GameState *state, const char *dungeonNames[])
+void dungeonMenu(GameState *state, const char *dungeonName[])
 {
 	int i, index;
 	printf("Lailaps: Yohane! Where should we go to now?\n");
@@ -572,9 +573,9 @@ void dungeonMenu(GameState *state, const char *dungeonNames[])
 	{
 		index = state->selectedIdols[i];
 		if (state->doneDungeons[i] == 0)
-			printf("[%d] Visit %s\n", i + 1, dungeonNames[index]);
+			printf("[%d] Visit %s\n", i + 1, dungeonName[index]);
 		else 
-			printf("[X] Visit %s\n", dungeonNames[index]);
+			printf("[X] Visit %s\n", dungeonName[index]);
 	}
 	
 	printf("\n[I]nventory\t[S]ave and Quit\n");
@@ -861,8 +862,6 @@ void BatMovement(Dungeon *dungeon, GameState *state, int currentDungeon)
     }
 } // M
 
-
-
 void postDungeonFeedback(int idolID, const char *idolNames[]){
 
     printf("\n*******************************************************\n");
@@ -877,10 +876,10 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
     int currentPage = 0;
     int achievementsPerPage = 8;
     int totalPages = (totalAchievements + achievementsPerPage-1) / achievementsPerPage;
-    int inputLoop = 1;
+    int done = 0;
     char choice;
 
-    while (inputLoop == 1){
+    while (done == 0){
         int count = 0;
         for (i = 0; i < totalAchievements; i++){
             if (earned[i])
@@ -930,7 +929,7 @@ void displayAchievements(int earned[], int totalAchievements, const char *achiev
                 break;
             case 'R':
             case 'r':
-                inputLoop = 0;
+                done = 1;
                 break;
             default:
                 printf("Invalid input. Try again.\n");
@@ -946,7 +945,7 @@ void unlockAchievement(int earned[], int index, const char *message){
     }
 } // L
 
-void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonNames){
+void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonName){
     int i;
     int tear = 0, noppo = 0, choco = 0;
     char itemName[50] = "N/A";
@@ -969,9 +968,9 @@ void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentId
     printf("Available Dungeons:\n");
     for (i = 0; i < SELECTED_IDOLS; i++){
         if (state->doneDungeons[i] == 0){
-            printf("[%d] %s's Dungeon\n", i+1, dungeonNames[currentIdols[i]]);
+            printf("[%d] %s's Dungeon\n", i+1, dungeonName[currentIdols[i]]);
         } else {
-            printf("[X] %s's Dungeon (Cleared)\n", dungeonNames[currentIdols[i]]);
+            printf("[X] %s's Dungeon (Cleared)\n", dungeonName[currentIdols[i]]);
         }
     }
 
@@ -1478,8 +1477,6 @@ void hanamaruShop(GameState *state, int rescuedIdols[]) {
     int numItems = sizeof(shopItems) / sizeof(shopItems[0]);
     int exitShop = 0;
 
-    int totalShopSpending = 0;
-
     while (!exitShop) {
         int menuMap[numItems];
         int visibleItemCount = 0;
@@ -1555,9 +1552,9 @@ void hanamaruShop(GameState *state, int rescuedIdols[]) {
 
                         if (foundSlot){
                             state->gold -= item->cost;
-                            totalShopSpending += item->cost;
+                            state->totalShopSpent += item->cost;
 
-                            checkShopSpendingAchievement(totalShopSpending, state->inventory);
+                            checkShopSpendingAchievement(state->totalShopSpending, state->inventory);
 
                             printf("Purchase successful! %s added to inventory.\n", item->name);
                             printf("Remaining Gold: %d GP\n", state->gold);
@@ -1586,7 +1583,7 @@ int countItem(GameState *state, int itemID){
 }
 
 void getItemInfo(GameState *state, int itemID, char *name, int *qty){
-    *qty = countImte(state, itemID);
+    *qty = countItem(state, itemID);
 
     switch (itemID){
         case ITEM_TEARS:
@@ -1602,5 +1599,29 @@ void getItemInfo(GameState *state, int itemID, char *name, int *qty){
             strcpy(name, "N/A");
             *qty = 0;
             break;
+    }
+}
+
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon, const char *dungeonName){
+    int done = 0;
+    char input;
+
+    while (done == 0 && state->isGameOver == 0){
+        displayDungeon(dungeon, state, currentDungeon, dungeonName);
+
+        printf("Enter move (WASD, [ or ] to switch items, space to use, X to stay): ");
+        scanf(" %c", &input);
+
+        movement(input, dungeon, state, currentDungeon);
+
+        if (state->isGameOver == 1){
+            printf("\nYohane has fallen! Returning to main menu...\n");
+            saveGameFile(state, NULL, NULL);
+            done = 1;
+        }
+
+        if (state->doneDungeons[currentDungeon] == 1){
+            done = 1;
+        }
     }
 }

@@ -3,7 +3,7 @@
 int main(){
     GameState game;
     int rescuedIdols[MAX_IDOLS] = {0};
-    int achievements[30] = {0};
+    int achievements[28] = {0};
     int finalBossVictories = 0;
 
     const char *Idols[MAX_IDOLS] = {
@@ -11,10 +11,21 @@ int main(){
     "Ruby", "Dia", "Kanan", "Mari"
     }; // M & L
 
-const char *dungeonNames[MAX_IDOLS] = {
+    const char *dungeonNames[MAX_IDOLS] = {
     "Yasudaya Ryokan", "Numazu Deep Sea Aquarium", "Izu-Mito Sea Paradise", "Shougetsu Confectionary", 
     "Nagahama Castle Ruins", "Numazugoyotei", "Uchiura Bay Pier", "Awashima Marine Park"
     }; // M
+
+    const char *achievementNames[28] = { // FIXED: define achievement names
+    "Yohane Descends!", "Mikan Power!", "Riko-chan BEAM!", "Yousoro!",
+    "It’s the future, zura!", "Ganbaruby!", "Buu-buu desu wa!", "Hug!!!",
+    "Shiny!", "In This Unstable World!", "One more sunshine story!",
+    "Pianoforte Monologue!", "Beginner’s Sailing!", "Oyasuminasan!",
+    "Red Gem Wink!", "White First Love!", "Sakana ka Nandaka!",
+    "New Winding Road!", "Deep Resonance!", "No. 10!", "CYaRon!",
+    "AZALEA!", "Guilty Kiss!", "Eikyuu Hours!", "Aozora Jumping Heart!",
+    "Mitaiken Horizon!", "Ruby-chan! Hai? Nani ga suki?", "Step! ZERO to ONE!"
+    }; // L
 
     int saveExists = (loadGameFile(&game, rescuedIdols, achievements) == 1);
     int keepRunning = 1;
