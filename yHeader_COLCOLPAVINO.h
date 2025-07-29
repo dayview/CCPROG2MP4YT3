@@ -13,7 +13,7 @@
 #define MAX_BATS 15
 #define ROWS 10
 #define COLS 55
-#define MAX_ITEMS 10
+#define MAX_ITEMS 25
 
 // Tile Definitions
 #define TILE_BORDER '*'
@@ -82,18 +82,6 @@ typedef struct {
     int x, y;
 } Position;
 
-typedef struct {
-    Position yohane;
-    Position lailaps;
-    Position siren;
-    Position switches[MAX_SWITCHES][2];
-    int currentSwitchPair;
-    int moveCounter;
-    int barrierBroken;
-    int sirenActive;
-    int switchesTriggered;
-} FinalBattle;
-
 // Game Loop & Save/Load
 void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories);
 void saveGameFile(GameState *state, int rescuedIdols[], int achievements[]);
@@ -112,19 +100,20 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
 int nextFloor(Dungeon *dungeon);
 void generateEmptyDungeon(Dungeon *dungeon);
 void randomTile(Dungeon *dungeon, char tile);
-void placeRandomTile(Dungeon *dungoen, char tile);
+void placeRandomTile(Dungeon *dungeon, char tile);
+void dungeonLoop(Dungeon *dungeon, GameState *state, int currentDungeon);
 
 // Final Dungeon
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories);
 void initializeFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[]);
-void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[10][10]);
-void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[10][10]);
+void displayFinalDungeon(int yohanePos[], int lailapsPos[], int switches[], int sirenPos[], int grid[ROWS][COLS]);
+void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int grid[ROWS][COLS]);
 void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]);
-int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[10][10]);
+int checkSwitchActivation(int yohanePos[], int lailapsPos[], int switches[], int grid[ROWS][COLS]);
 int checkSirenDefeat(int yohanePos[], int sirenPos[]);
 void handleSirenDefeat(GameState *state, int earned[], Dungeon *finalDungeon, int *finalBossVictories);
-void spawnBatFinalDungeon(int grid[10][10], bat bats[], int switchesActivated, int sirenPos[], int yohanePos[], int lailapsPos[]);
-void moveFinalDungeonBats(bat bats[], int grid[10][10], GameState *state, int yohanePos[], int lailapsPos[], int switchesActivated);
+void spawnBatFinalDungeon(int grid[ROWS][COLS], bat bats[], int switchesActivated, int sirenPos[], int yohanePos[], int lailapsPos[]);
+void moveFinalDungeonBats(bat bats[], int grid[ROWS][COLS], GameState *state, int yohanePos[], int lailapsPos[], int switchesActivated);
 
 // Bat Functions
 void randomBat(Dungeon *dungeon, int batCount);
@@ -162,6 +151,7 @@ void markDungeonClear(GameState *state, int dungeonIndex);
 void characterProfile(int choice);
 int allIdolsRescued(int rescuedIdols[]);
 void resetIdolSelection(int rescuedIdols[]);
+void getItemInfo(GameState *state, int itemID, char *name, int *qty);
 
 // Post Dungeon
 void postDungeonFeedback(int idolID, const char *idolNames[]);

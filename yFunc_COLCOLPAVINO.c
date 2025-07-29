@@ -1,7 +1,7 @@
 // ONCE SIREN HAS BEEN KILLED NO MORE BATS, AND PRIORITIZE YOHANE'S POSITION (but it's better to prioritize both positions, if possible)
 #include "yHeader_COLCOLPAVINO.h"
 
-void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames){
+void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], const char *dungeonNames[], int *finalBossVictories){
     int done = 0;
     int choice;
 
@@ -9,8 +9,7 @@ void startGameLoop(GameState *state, int rescuedIdols[], int achievements[], con
         if (checkAllDungeonsCleared(state)){
             printf("All dungeons cleared! Final dungeon unlocked.\n");
             
-            int finalBossVictories = 0;
-            startFinalDungeon(state, achievements, &finalBossVictories);
+            startFinalDungeon(state, achievements, finalBossVictories);
 
             done = 1;
         } else {
@@ -224,7 +223,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 			break;
 	}
 	
-	//check for out of bounce
+	//check for out of bounds
 	if (x < 0 || x >= ROWS || y < 0 || y >= COLS)
 	{
 		printf("Out of bounds. Stay inside the dungeon\n");
@@ -300,11 +299,13 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 				//ADD CODE BELOW
 				if(nextFloor(dungeon))
 				{
-					state->DoneDungeons[currentDungeon] = 1;
-					printf("Cleared! You saved %s!\n",Idols[state->selectedIdols[currentDungeon]]);
+                    state->doneDungeons[currentDungeon] = 1;
+					rescuedIdols[state->selectedIdols[currentDungeon]]++;
+					
+                    checkRescueAchievements(rescuedIdols, state->inventory, state->selectedIdols[currentDungeon]);
+                    postDungeonFeedback(state->selectedIdols[currentDungeon], Idols);
 				}
-				move = 0;
-				
+				move = 0;	
 				break;
 			case '.':
 				break;
@@ -383,7 +384,7 @@ void movement(char input, Dungeon *dungeon, GameState *state, int currentDungeon
 		BatMovement(dungeon, state, currentDungeon);
 } // M 
 
-void GenerateEmptyDungeon(Dungeon *dungeon)
+void generateEmptyDungeon(Dungeon *dungeon)
 {
 	int i,j;
 	
@@ -403,10 +404,10 @@ void GenerateEmptyDungeon(Dungeon *dungeon)
 	dungeon->yohaneY = 1;
 	dungeon->floor = 1;
 	
-	PlaceRandomTile(dungeon, TILE_WALL, 25);
-	PlaceRandomTile(dungeon, TILE_HEAT, 25);
-	PlaceRandomTile(dungeon, TILE_SPIKE, 25);
-	PlaceRandomTile(dungeon, TILE_WATER, 25);
+	placeRandomTile(dungeon, TILE_WALL, 25);
+	placeRandomTile(dungeon, TILE_HEAT, 25);
+	placeRandomTile(dungeon, TILE_SPIKE, 25);
+	placeRandomTile(dungeon, TILE_WATER, 25);
 	
 } // M
 
@@ -415,22 +416,7 @@ void displayDungeon(Dungeon *dungeon, GameState *state, int dungeonNumber, const
     char itemName[50] = "N/A";
     int itemQty = 0;
 
-    if (state->currentItem == ITEM_TEARS){
-        strcpy(itemName, "Tears of a Fallen Angel");
-        for (i = 0; i < MAX_ITEMS; i++)
-            if (state->inventory[i] == ITEM_TEARS)
-                itemQty++;
-    } else if (state->currentItem == ITEM_NOPPO){
-        strcpy(itemName, "Noppo Bread");
-        for (i = 0; i < MAX_ITEMS; i++)
-            if (state->inventory[i] == ITEM_NOPPO)
-                itemQty++;
-    } else if (state->currentItem == ITEM_CHOCO){
-        strcpy(itemName, "Choco-Mint Ice Cream");
-        for (i = 0; i < MAX_ITEMS; i++)
-            if (state->inventory[i] == ITEM_CHOCO)
-                itemQty++;
-    }
+    getItemInfo(state, state->currentItem, itemName, &itemQty);
 
     printf("\nDungeon #%d: %s\n", dungeonNumber+1, dungeonName);
     printf("Floor %d of %d\n\n", dungeon->floor, dungeon->maxFloor);
@@ -462,7 +448,7 @@ void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon) //curr
 	else 
 		dungeon->maxFloor = (rand() % 2) + 2; // random 2 or 3
 		
-	GenerateEmptyDungeon(dungeon);
+	generateEmptyDungeon(dungeon);
 	if(currentDungeon == 0)
 		batCount =5;
 		
@@ -474,8 +460,8 @@ void startDungeon(GameState *state, Dungeon *dungeon, int currentDungeon) //curr
 		
 	randomBat(dungeon, batCount);
 		
-	RandomTile(dungeon, TILE_TREASURE);
-	RandomTile(dungeon, TILE_EXIT);
+	randomTile(dungeon, TILE_TREASURE);
+	randomTile(dungeon, TILE_EXIT);
 } // M
 
 void startFinalDungeon(GameState *state, int achievements[], int *finalBossVictories){
@@ -487,8 +473,11 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
     int sirenDefeated = 0;
     int loop = 1;
     int turnCount = 0;
-
     int i, j;
+
+    Dungeon finalDungeon;
+    generateEmptyDungeon(&finalDungeon);
+
     for (i = 0; i < ROWS; i++)
         for (j = 0; j < COLS; j++)
             grid[i][j] = 0;
@@ -518,7 +507,7 @@ void startFinalDungeon(GameState *state, int achievements[], int *finalBossVicto
 
         turnCount++;
 
-        if (turnCount % 8 == 0 ^^ sirenDefeated == 0){
+        if (turnCount % 8 == 0 && sirenDefeated == 0){
             spawnBatFinalDungeon(grid, bats, switchesActivated, sirenPos, yohanePos, lailapsPos);
         }
 
@@ -548,9 +537,9 @@ int nextFloor(Dungeon *dungeon)
 	if(dungeon->floor < dungeon->maxFloor)
 	{
 		dungeon->floor++;
-		GenerateEmptyDungeon(dungeon);
-		RandomTile(dungeon, TILE_TREASURE);
-		RandomTile(dungeon, TILE_EXIT);
+		generateEmptyDungeon(dungeon);
+		randomTile(dungeon, TILE_TREASURE);
+		randomTile(dungeon, TILE_EXIT);
 		printf("Moved to next floor: %d/%d\n",dungeon->floor,dungeon->maxFloor);
 		floors = 0; //more floors
 	}
@@ -594,49 +583,34 @@ void dungeonMenu(GameState *state, const char *dungeonNames[])
 
 void useItem(GameState *state, int item)
 {
-	switch(item)
-	{
-		case ITEM_TEARS:
-			if(state->hp < state->maxHP)
-			{
-				state->hp += 0.5;
-				if(state->hp > state->maxHP)
-					state->hp = state->maxHP;
-				printf("Yohane used Tears of the fallen Angel. Heals +0.5 HP\n");
-			}
-			else
-				printf("HP is already full!\n");
-			break;
-			
-		case ITEM_NOPPO:
-			if(state->hp < state->maxHP)
-			{
-				state->hp += 0.5;
-				if(state->hp > state->maxHP)
-					state->hp = state->maxHP;
-				printf("Yohane used Noppo Bread. Heals +0.5 HP\n");
-			}
-			else
-				printf("HP is already full!\n");
-			break;
-			
-		case ITEM_STEWSHINE:
-			state->maxHP += 1;
-			printf("Used Stewshine. Max HP permanently increased by 1!\n");
-			break;
-			
-		case ITEM_MIKAN:
-			state->maxHP += 1;
-			printf("Used Mikan Mochi. Max HP permanently increased by 1!\n");
-			break;
-		
-		case ITEM_KUROSAWA:
-			state->maxHP += 1;
-			printf("Used Kurosawa Macha. Max HP permanently increased by 1!\n");
-			break;
-			
-	}
-} // M
+    switch(item)
+    {
+        case ITEM_TEARS:
+            if(state->hp < state->maxHP)
+            {
+                state->hp += 0.5;
+                if(state->hp > state->maxHP)
+                    state->hp = state->maxHP;
+                printf("Yohane used Tears of the fallen Angel. Heals +0.5 HP\n");
+            }
+            else
+                printf("HP is already full!\n");
+            break;
+
+        case ITEM_NOPPO:
+            if(state->hp < state->maxHP)
+            {
+                state->hp += 0.5;
+                if(state->hp > state->maxHP)
+                    state->hp = state->maxHP;
+                printf("Yohane used Noppo Bread. Heals +0.5 HP\n");
+            }
+            else
+                printf("HP is already full!\n");
+            break;
+
+    }
+} // M 
 
 void displayInventory(GameState *state){
     int tear = 0, noppo = 0, choco = 0;
@@ -644,28 +618,11 @@ void displayInventory(GameState *state){
     char itemName[50] = "N/A";
     int currentQty = 0;
 
-    for (i = 0; i < MAX_ITEMS; i++){
-        if (state->inventory[i] == ITEM_TEARS)
-            tear++;
-        else if (state->inventory[i] == ITEM_NOPPO)
-            noppo++;
-        else if (state->inventory[i] == ITEM_CHOCO)
-            choco++;
-    }
+    int tear = countItem(state, ITEM_TEARS);
+    int noppo = countItem(state, ITEM_NOPPO);
+    int choco = countItem(state, ITEM_CHOCO);
 
-    if (state->currentItem == ITEM_TEARS){
-        strcpy(itemName, "Tears of a Fallen Angel");
-        currentQty = tear;
-    } else if (state->currentItem == ITEM_NOPPO){
-        strcpy(itemName, "Noppo Bread");
-        currentQty = noppo;
-    } else if (state->currentItem == ITEM_CHOCO){
-        strcpy(itemName, "Choco-Mint Ice Cream");
-        currentQty = choco;
-    } else {
-        strcpy(itemName, "N/A");
-        currentQty = 0;
-    }
+    getItemInfo(state, state->currentItem, itemName, &currentQty);
 
     printf("\nLailaps: These are the items you have, Yohane!\n");
     printf("HP: %.1f / %d\tTotal Gold: %d GP\n", state->hp, state->maxHP, state->gold);
@@ -736,7 +693,7 @@ void switchItem(GameState *state, char direction)
 			
 			printf("Switched to: ");
 			if(state->currentItem == ITEM_TEARS)
-				printf("Tears of a fallen angel\n");
+				printf("Tears of a Fallen Angel\n");
 			else if(state->currentItem == ITEM_NOPPO)
 				printf("Noppo bread\n");
 			else if(state->currentItem == ITEM_CHOCO)
@@ -753,27 +710,25 @@ void switchItem(GameState *state, char direction)
 
 void useItemInHand(GameState *state)
 {
-	int i;
-	int use = 0;
-	
-	if(state->currentItem ==0)
-		printf("No item in hand. Turn ended...\n");
-	else
-	{
-		for(i = 0; i < MAX_ITEMS; i++)
-		{
-			if(state->inventory[i] == state->currentItem && use == 0)
-			{
-				useItem(state, state->currentItem);
-				state->inventory[i] = 0;
-				use = 1; //used
-			}
-		}
-		
-		if(use == 0)
-			printf("Don't have that item anymore.\n");
-	}
-} // M
+    int i;
+    int use = 0;
+
+    if (state->currentItem == 0) {
+        printf("No item in hand. Turn ended...\n");
+    } else {
+        for (i = 0; i < MAX_ITEMS; i++) {
+            if (state->inventory[i] == state->currentItem && use == 0) {
+                useItem(state, state->currentItem);
+                state->inventory[i] = 0;
+                use = 1; // used
+            }
+        }
+
+        if (use == 0) {
+            printf("Don't have that item anymore.\n");
+        }
+    }
+} // M & L
 
 void randomBat(Dungeon *dungeon, int batCount)
 {
@@ -918,23 +873,67 @@ void postDungeonFeedback(int idolID, const char *idolNames[]){
 
 void displayAchievements(int earned[], int totalAchievements, const char *achievementNames[]){
 
-    int i, count = 0;
+    int i;
+    int currentPage = 0;
+    int achievementsPerPage = 8;
+    int totalPages = (totalAchievements + achievementsPerPage-1) / achievementsPerPage;
+    int inputLoop = 1;
+    char choice;
 
-    for (i = 0; i < totalAchievements; i++){
-        if (earned[i])
-            count++;
-    }
+    while (inputLoop == 1){
+        int count = 0;
+        for (i = 0; i < totalAchievements; i++){
+            if (earned[i])
+                count++;
+        }
 
-    printf("**************************************************\n");
-    printf("               Achievements Module\n");
-    printf("               Obtained: %d / %d\n", count, totalAchievements);
-    printf("**************************************************\n");
+        printf("**************************************************\n");
+        printf("               Achievements Module\n");
+        printf("               Obtained: %d / %d\n", count, totalAchievements);
+        printf("**************************************************\n");
 
-    for (i = 0; i < totalAchievements; i++){
-        if (earned[i]){
-            printf("[%d] %-30s %s\n", i+1, achievementNames[i], "EARNED!");
-        } else {
-            printf("[%d] %-30s %s\n", i+1, achievementNames[i], "NOT EARNED!");
+        int startIndex = currentPage * achievementsPerPage;
+        int endIndex = startIndex + achievementsPerPage;
+        if (endIndex > totalAchievements){
+            endIndex = totalAchievements;
+        }
+
+        for (i = startIndex; i < endIndex; i++){
+            if (earned[i]){
+                printf("[%2d] %-35s %s\n", i+1, achievementNames[i], "EARNED!");
+            } else {
+                printf("[%2d] %-35s %s\n", i+1, achievementNames[i], "NOT EARNED!");
+            }
+        }
+
+        printf("\nPage %d of %d\n", currentPage+1, totalPages);
+        printf("[N]ext Page\t[P]revious Page\t[R]eturn to Main Menu\n");
+        printf("Choice: ");
+        scanf(" %c", &choice);
+
+        switch (choice){
+            case 'N':
+            case 'n':
+                if (currentPage < totalPages-1){
+                    currentPage++;
+                } else {
+                    printf("Already on last page.\n");
+                }
+                break;
+            case 'P':
+            case 'p':
+                if (currentPage > 0){
+                    currentPage--;
+                } else {
+                    printf("Already on first page.\n");
+                }
+                break;
+            case 'R':
+            case 'r':
+                inputLoop = 0;
+                break;
+            default:
+                printf("Invalid input. Try again.\n");
         }
     }
 } // L
@@ -948,48 +947,40 @@ void unlockAchievement(int earned[], int index, const char *message){
 } // L
 
 void displayDungeonSelection(GameState *state, int rescuedIdols[], int currentIdols[], const char* dungeonNames){
-
     int i;
+    int tear = 0, noppo = 0, choco = 0;
+    char itemName[50] = "N/A";
+    int currentQty = 0;
+
+    getItemInfo(state, state->currentItem, itemName, &currentQty);
+
     printf("\n=== Dungeon Selection ===\n");
-    printf("Yohane's HP: %d/5\n", state->hp);
+    printf("Yohane's HP: %.1f / %d\n", state->hp, state->maxHP);
     printf("Total Gold: %d GP\n", state->gold);
-    printf("Item on hand: ");
-    int hasItem = 0;
-    int foundItemIndex = -1;
-    for (i = 0; i < INVENTORY_SLOTS; i++){
-        if (state->inventory[i] > 0 && hasItem == 0){
-            foundItemIndex = i;
-            hasItem = 1;
-        }
-    }
-    if (hasItem){
-        switch(foundItemIndex){
-            case 0:
-                printf("Tears of a Fallen Angel (%d)", state->inventory[0]);
-                break;
-            case 1:
-                printf("Noppo Bread (%d)", state->inventory[1]);
-                break;
-            case 2:
-                printf("Choco-Mint Ice Cream (%d)", state->inventory[2]);
-                break;
-        }
-    } else {
-        printf("N/A");
+    printf("Item on hand: %s", itemName);
+
+    if (currentQty > 0){
+        printf(" (%d)", currentQty);
+    } else if (state->currentItem != 0){
+        printf(" (0)");
     }
     printf("\n\n");
+
     printf("Available Dungeons:\n");
     for (i = 0; i < SELECTED_IDOLS; i++){
         if (state->doneDungeons[i] == 0){
-            printf("[%d] %s's Dungeon", i+1, dungeonNames[currentIdols[i]]);
+            printf("[%d] %s's Dungeon\n", i+1, dungeonNames[currentIdols[i]]);
         } else {
             printf("[X] %s's Dungeon (Cleared)\n", dungeonNames[currentIdols[i]]);
         }
     }
-    printf("\n[I]nventory [S]ave and Quit");
+
+    printf("\n[I]nventory\t[S]ave and Quit");
+
     if (rescuedIdols[3]){
-        printf("[H]anamaru Shop");
+        printf("\t[H]anamaru Shop");
     }
+
     printf("\nChoice: ");
 } // L
 
@@ -1131,7 +1122,7 @@ void moveYohaneAndLailaps(char input, int yohanePos[], int lailapsPos[], int gri
             lailapsPos[1] = newLailapsY;
         }
     }
-}
+} // L 
 
 int checkSirenDefeat(int yohanePos[], int sirenPos[]){
 
@@ -1156,24 +1147,29 @@ void handleSirenDefeat(GameState *state, int earned[], Dungeon *finalDungeon, in
     state->gold += 750;
 
     if (!earned[9]){
-        unlockAchievement(earned, 29, "In This Unstable World!");
+        unlockAchievement(earned, 9, "In This Unstable World!");
         printf("Achievement Unlocked: In This Unstable World!\n");
     }
 
     *finalBossVictories += 1;
     checkFinalBossAchievement(*finalBossVictories, earned);
 
-    while (!placed){
-        x = rand() % (ROWS-2) + 1;
-        y = rand() & (COLS-2) + 1;
-        if (finalDungeon->map[x][y] == TILE_PASSABLE){
-            finalDungeon->map[x][y] = TILE_EXIT;
-            placed = 1;
-            printf("A glowing portal appears at (%d, %d)...\n", x, y);
+    if (finalDungeon != NULL){
+        while (!placed){
+            x = rand() % (ROWS-2) + 1;
+            y = rand() & (COLS-2) + 1;
+            if (finalDungeon->map[x][y] == TILE_PASSABLE){
+                finalDungeon->map[x][y] = TILE_EXIT;
+                placed = 1;
+                printf("A glowing portal appears at (%d, %d)...\n", x, y);
+            }
         }
+        printf("Proceed to the exit to leave the mirror world...\n");
+    } else {
+        printf("Proceed to the exit to leave the mirror world...\n");
     }
-    printf("Proceed to the exit to leave the mirror world...\n");
-}
+
+} // L 
 
 void moveSiren(int sirenPos[], int yohanePos[], int lailapsPos[]){
 
@@ -1414,15 +1410,34 @@ void characterProfile(int choice){
 void carryOverProgress(int rescuedIdols[], GameState *state){
 
     printf("Progress carried over to new playthrough!\n");
+
+    state->maxHP = 3;
+    state->usedChoco = 0;
+    state->currentItem = 0;
+
     printf("Gold: %d GP\n", state->gold);
+
+    int i;
+    for (i = 0; i < MAX_ITEMS; i++){
+        if (state->inventory[i] != ITEM_TEARS && state->inventory[i] != ITEM_NOPPO)
+            state->inventory[i] = 0;
+    }
+
     printf("Items carried over:\n");
 
-    if (state->inventory[0] > 0)
-        printf("- Tears of a Fallen Angel: %d\n", state->inventory[0]);
-    if (state->inventory[1] > 0)
-        printf("- Noppo Bread: %d\n", state->inventory[1]);
-    if (state->inventory[2] > 0)
-        printf("- Choco-Mint Ice Cream: %d\n", state->inventory[2]);
+    int tearCount = 0, noppoCount = 0;
+
+    for (i = 0; i < MAX_ITEMS; i++){
+        if (state->inventory[i] == ITEM_TEARS)
+            tearCount++;
+        else if (state->inventory[i] == ITEM_NOPPO)
+            noppoCount++;
+    }
+
+    if (tearCount > 0)
+        printf("- Tears of a Fallen Angel: %d\n", tearCount);
+    if (noppoCount > 0)
+        printf("- Noppo Bread: %d\n", noppoCount);
 } // l
 
 int allIdolsRescued(int rescuedIdols[]){
@@ -1447,179 +1462,145 @@ void resetIdolSelection(int rescuedIdols[]){
     }
 } // L
 
-void hanamaruShop(GameState *state, int rescuedIdols[]){
+void hanamaruShop(GameState *state, int rescuedIdols[]) {
     ShopItem shopItems[] = {
-        {"Tears of a Fallen Angel", 30, -1, 0, "Heals Yohane .5 HP"},
-        {"Noppo Bread", 100, -1, 1, "Heals Yohane .5 HP"},
-        {"Shovel Upgrade", 300, 6, -1, "Allows Yohane to dig spike walls without damage"},
-        {"Bat Tamer", 400, 1, -1, "Turns damage from all bats to a constant .5 HP damage"},
-        {"Air Shoes", 500, 2, -1, "Allows Yohane to walk over water tiles. Prevents damage from standing on heat tiles."},
-        {"Stewshine", 1000, 7, -1, "Increases Yohane’s HP by 1 permanently"},
-        {"Mikan Mochi", 1000, 0, -1, "Increases Yohane’s HP by 1 permanently"},
-        {"Kurosawa Macha", 1000, 5, -1, "Increases Yohane’s HP by 1 permanently"},
-        {"Choco-Mint Ice Cream", 2000, 4, 2, "Saves Yohane from a fatal hit when on hand. Heals Yohane to full health afterwards"}
+        {"Tears of a Fallen Angel", 30, -1, ITEM_TEARS, "Heals Yohane .5 HP"},
+        {"Noppo Bread", 100, -1, ITEM_NOPPO, "Heals Yohane .5 HP"},
+        {"Shovel Upgrade", 300, 6, ITEM_SHOVEL, "Allows Yohane to dig spike walls without damage"},
+        {"Bat Tamer", 400, 1, ITEM_BAT, "Turns damage from all bats to a constant .5 HP damage"},
+        {"Air Shoes", 500, 2, ITEM_AIR, "Allows Yohane to walk over water tiles. Prevents damage from standing on heat tiles."},
+        {"Stewshine", 1000, 7, ITEM_STEWSHINE, "Increases Yohane’s HP by 1 permanently"},
+        {"Mikan Mochi", 1000, 0, ITEM_MIKAN, "Increases Yohane’s HP by 1 permanently"},
+        {"Kurosawa Macha", 1000, 5, ITEM_KUROSAWA, "Increases Yohane’s HP by 1 permanently"},
+        {"Choco-Mint Ice Cream", 2000, 4, ITEM_CHOCO, "Saves Yohane from a fatal hit when on hand. Heals Yohane to full health afterwards"}
     };
-    
-    int numItems = 9;
-    int choice;
-    char input[10];
-    int i;
-    int itemNum;
-    int selectedItem;
-    ShopItem *item;
-    char confirm[10];
-    int c;
-    
-    printf("\n========================================\n");
-    printf("         HANAMARU'S SHOP\n");
-    printf("========================================\n");
-    printf("Gold: %d GP\n", state->gold);
-    printf("Current Inventory:\n");
-    printf("  Tears of a Fallen Angel: %d\n", state->inventory[0]);
-    printf("  Noppo Bread: %d\n", state->inventory[1]);
-    printf("  Choco-Mint Ice Cream: %d\n", state->inventory[2]);
-    printf("========================================\n");
-    printf("Available Items:\n");
-    printf("1) %-20s - %4d GP\n", shopItems[0].name, shopItems[0].cost);
-    printf("2) %-20s - %4d GP\n", shopItems[1].name, shopItems[1].cost);
-    
-    itemNum = 3;
-    for (i = 2; i < numItems; i++) {
-        if (shopItems[i].unlockIdol == -1 || rescuedIdols[shopItems[i].unlockIdol]) {
-            printf("%d) %-20s - %4d GP\n", itemNum, shopItems[i].name, shopItems[i].cost);
+
+    int numItems = sizeof(shopItems) / sizeof(shopItems[0]);
+    int exitShop = 0;
+
+    int totalShopSpending = 0;
+
+    while (!exitShop) {
+        int menuMap[numItems];
+        int visibleItemCount = 0;
+        char input[10], confirm[10];
+        int choice = -1, i, invSlot, foundSlot = 0, c;
+
+        printf("\n========================================\n");
+        printf("         HANAMARU'S SHOP\n");
+        printf("========================================\n");
+        printf("Gold: %d GP\n", state->gold);
+        printf("Current Inventory:\n");
+        printf("  Tears of a Fallen Angel: %d\n", state->inventory[0]);
+            for (i = 0; i < MAX_ITEMS; i++)
+                if (state->inventory[i] == ITEM_TEARS)
+                    printf("+");
+        printf("  Noppo Bread: %d\n", state->inventory[1]);
+            for (i = 0; i < MAX_ITEMS; i++)
+                if (state->inventory[i] == ITEM_NOPPO)
+                    printf("+");
+        printf("  Choco-Mint Ice Cream: %d\n", state->inventory[2]);
+            for (i = 0; i < MAX_ITEMS; i++)
+                if (state->inventory[i] == ITEM_CHOCO)
+                    printf("+");
+        printf("========================================\n");
+        printf("Available Items:\n");
+
+        for (i = 0; i < numItems; i++) {
+            if (shopItems[i].unlockIdol == -1 || rescuedIdols[shopItems[i].unlockIdol]) {
+                menuMap[visibleItemCount] = i;
+                printf("%d) %-22s - %4d GP\n", visibleItemCount+1, shopItems[i].name, shopItems[i].cost);
+                visibleItemCount++;
+            }
         }
-        itemNum++;
-    }
-    printf("[R]eturn\n");
-    printf("Choice: ");
-    scanf("%s", input);
-    while ((c = getchar()) != '\n' && c != EOF) {}
-    if (strcmp(input, "R") == 0 || strcmp(input, "r") == 0) {
-        printf("Returning to main menu...\n");
-        return; // refactor
-    }
-    choice = atoi(input);
-    if (choice < 1 || choice > numItems) {
-        printf("Invalid choice!\n");
-        return; // refactor
-    }
-    selectedItem = choice - 1;
-    if (selectedItem >= 2) {
-        selectedItem = selectedItem + 1;
-    }
-    if (selectedItem >= numItems) {
-        printf("Invalid choice!\n");
-        return; // refactor
-    }
-    item = &shopItems[selectedItem];
-    if (item->unlockIdol != -1 && !rescuedIdols[item->unlockIdol]) {
-        printf("Item locked! Rescue the required idol first.\n");
-        return; // refactor
-    }
-    printf("\n%s\n", item->description);
-    printf("Cost: %d GP\n", item->cost);
-    printf("Purchase? (Y/N): ");
-    scanf("%s", confirm);
-    while ((c = getchar()) != '\n' && c != EOF) {}
-    if (strcmp(confirm, "Y") == 0 || strcmp(confirm, "y") == 0) {
-        if (state->gold >= item->cost) {
-            if (item->inventoryIndex >= 0) {
-                if (state->inventory[item->inventoryIndex] < 99) {
-                    state->inventory[item->inventoryIndex]++;
-                    state->gold -= item->cost;
-                    printf("Purchase successful! %s added to inventory.\n", item->name);
-                    printf("Remaining Gold: %d GP\n", state->gold);
-                } else {
-                    printf("Inventory full for this item!\n");
-                }
+
+        printf("[R]eturn\n");
+        printf("Choice: ");
+        scanf("%s", input);
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        if (strcmp(input, "R") == 0 || strcmp(input, "r") == 0) {
+            printf("Returning to main menu...\n");
+            exitShop = 1;
+        } else {
+            choice = atoi(input);
+            if (choice < 1 || choice > visibleItemCount){
+                printf("Invalid choice!\n");
             } else {
-                state->gold -= item->cost;
-                printf("Purchase successful! %s acquired.\n", item->name);
-                printf("Remaining Gold: %d GP\n", state->gold);
-            }
-        } else {
-            printf("Not enough gold! You need %d GP more.\n", item->cost - state->gold);
-        }
-    } else {
-        printf("Purchase cancelled.\n");
-    }
-} // L
+                int selectedIndex = menuMap[choice-1];
+                ShopItem *item = &shopItems[selectedIndex];
 
-void handleFinalBattle(FinalBattle *battle, char map[][50], int mapRows, int mapCols){
-    int i, j, valid = 0;
-    char temp;
+                printf("\n%s\n", item->description);
+                printf("Cost: %d GP\n", item->cost);
+                printf("Purchase? (Y/N): ");
+                scanf("%s", confirm);
+                while ((c = getchar()) != '\n' && c != EOF) {}
 
-    if (battle->currentSwitchPair < MAX_SWITCHES){
-        if (map[battle->yohane.y][battle->yohane.x] == '0' &&
-            map[battle->lailaps.y][battle->lailaps.x] == '0'){
-                map[battle->yohane.y][battle->yohane.x] = 'Y';
-                map[battle->lailaps.y][battle->lailaps.x] = 'L';
-                battle->currentSwitchPair++;
-                battle->switchesTriggered++;
-    }
+                if (strcmp(confirm, "Y") == 0 || strcmp(confirm, "y") == 0){
+                    if (state->gold >= item->cost){
+                        foundSlot = 0;
+                        for (invSlot = 0; invSlot < MAX_ITEMS; invSlot++){
+                            if (state->inventory[invSlot] == 0 && foundSlot == 0){
+                                state->inventory[invSlot] = item->inventoryIndex;
 
-    if (battle->currentSwitchPair < MAX_SWITCHES){
-        Position s1, s2;
-        while (valid == 0){
-            s1.x = rand() % mapCols;
-            s1.y = rand() % mapRows;
-            s2.x = s1.x + (rand() % 6 - 2);
-            s2.y = s1.y + (rand() % 3 - 1);
+                                if (item->inventoryIndex == ITEM_STEWSHINE ||
+                                    item->inventoryIndex == ITEM_MIKAN ||
+                                    item->inventoryIndex == ITEM_KUROSAWA){
+                                        state->maxHP++;
+                                    printf("Yohane's Max HP increased by 1! HP: %.1f / %d\n", state->hp, state->maxHP);
+                                }
+                                foundSlot = 1;
+                            }
+                        }
 
-            if (s2.x < 0 || s2.x >= mapCols || s2.y < 0 || s2.y >= mapRows)
-                continue; // refactor
+                        if (foundSlot){
+                            state->gold -= item->cost;
+                            totalShopSpending += item->cost;
 
-            if (map[s1.y][s1.x] == '.' && map[s2.y][s2.x] == '.' &&
-                (s1.x != battle->yohane.x || s1.y != battle->yohane.y) &&
-                (s2.x != battle->lailaps.x || s2.y != battle->lailaps.y)){
-                    battle->switches[battle->currentSwitchPair][0] = s1;
-                    battle->switches[battle->currentSwitchPair][1] = s2;
-                    map[s1.y][s1.x] = '0';
-                    map[s2.y][s2.x] = '0';
-                    valid = 1;
-                }
-            }
-        }
-    } else if (battle->barrierBroken == 0){
-        map[battle->siren.y][battle->siren.x] = 'S';
-        battle->sirenActive = 1;
-        battle->barrierBroken = 1;
-    }
+                            checkShopSpendingAchievement(totalShopSpending, state->inventory);
 
-    if (battle->sirenActive == 1){
-        int dx = 0, dy = 0;
-
-        if (battle->yohane.x > battle->siren.x)
-            dx = 1;
-        else if (battle->yohane.x < battle->siren.x)
-            dx = -1;
-        
-        if (battle->yohane.y > battle->siren.y)
-            dy = 1;
-        else if (battle->yohane.y < battle->siren.y)
-            dy = -1;
-        
-        map[battle->siren.y][battle->siren.x] = '.';
-        battle->siren.x += dx;
-        battle->siren.y += dy;
-
-        if (map[battle->siren.y][battle->siren.x] == 'Y' ||
-            map[battle->siren.y][battle->siren.x] == 'L'){
-                // Game over will be handled by caller
-        } else {
-            map[battle->siren.y][battle->siren.x] = 'S';
-        }
-    }
-
-    if (battle->moveCounter != 0 && battle->moveCounter % 8 == 0){
-        for (i = 0; i < mapRows; i++){
-            for (j = 0; j < mapCols; j++){
-                if (map[i][j] == '.'){
-                    map[i][j] = 'b';
-                    return; // refactor
+                            printf("Purchase successful! %s added to inventory.\n", item->name);
+                            printf("Remaining Gold: %d GP\n", state->gold);
+                        } else {
+                            printf("Inventory full! Could not add item.\n");
+                            printf("Purchased cancelled and gold refunded.\n");
+                        }
+                    } else {
+                        printf("Not enough gold! You need %d GP more.\n", item->cost - state->gold);
+                    }
+                } else {
+                        printf("Purchase cancelled.\n");
                 }
             }
         }
     }
+} // L & M
+
+int countItem(GameState *state, int itemID){
+    int i, count = 0;
+    for (i = 0; i < MAX_ITEMS; i++){
+        if (state->inventory[i] == itemID)
+            count++;
+    }
+    return count;
 }
 
+void getItemInfo(GameState *state, int itemID, char *name, int *qty){
+    *qty = countImte(state, itemID);
+
+    switch (itemID){
+        case ITEM_TEARS:
+            strcpy(name, "Tears of a Fallen Angel");
+            break;
+        case ITEM_NOPPO:
+            strcpy(name, "Noppo Bread");
+            break;
+        case ITEM_CHOCO:
+            strcpy(name, "Choco-mint Ice Cream");
+            break;
+        default:
+            strcpy(name, "N/A");
+            *qty = 0;
+            break;
+    }
+}

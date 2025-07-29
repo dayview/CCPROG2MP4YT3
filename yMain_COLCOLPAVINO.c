@@ -42,7 +42,7 @@ const char *dungeonNames[MAX_IDOLS] = {
             case 'C': case 'c':
             if (saveExists){
                 printf("Continuing game...\n");
-                startGameLoop(&game, rescuedIdols, achievements, dungeonNames);
+                startGameLoop(&game, rescuedIdols, achievements, dungeonNames, &finalBossVictories);
             } else {
                 printf("No saved game found. Please start a new game.\n");
             }
@@ -61,9 +61,10 @@ const char *dungeonNames[MAX_IDOLS] = {
                 break;
 
             case 'P': case 'p': {
-                char profileChoice = ' ';
+                char profileChoice;
+                int viewProfiles = 1;
 
-                do {
+                while (viewProfiles == 1) {
                     printf("\n=== Profile Viewer ===\n");
                     printf("Select a character to view:\n");
                     printf("[1] Yohane\n");
@@ -113,6 +114,7 @@ const char *dungeonNames[MAX_IDOLS] = {
                             break;
                         case 'R':
                         case 'r':
+                            viewProfiles = 0;
                             break;
                         default:
                             printf("Invalid input.\n");
